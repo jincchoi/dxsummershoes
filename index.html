@@ -446,9 +446,28 @@ function classify(lm){const f=fingerExt(lm),up=f.filter(Boolean).length;
   if(up>=3)return "palm";                            // 🖐 손바닥 = 이미지 좌·우
   return null;}
 let poseHold=null,poseCount=0,palmZone=0,palmCount=0;
+let palmStartCount=0;
+const PALM_START_FRAMES=18;
 function handle(res){
   const now=performance.now();
-  if($("overlay").style.display!=="none"){poseHold=null;poseCount=0;palmZone=0;palmCount=0;return;}  // 가이드 화면에선 제스처 무시
+  if($("overlay").style.display!=="none"){
+    if(res&&res.landmarks&&res.landmarks.length){
+      const lm=res.landmarks[0];
+      const f=fingerExt(lm),up=f.filter(Boolean).length;
+      if(up>=4&&!isOK(lm)){
+        palmStartCount++;
+        $("clbl").textContent="🖐 손바닥 인식 중...";
+        if(palmStartCount>=PALM_START_FRAMES){
+          palmStartCount=0;
+          $("overlay").style.display="none";
+          $("exitBtn").style.display="block";
+          resetIdle();
+          return;
+        }
+      } else { palmStartCount=0; $("clbl").textContent="손바닥을 보여주세요"; }
+    } else { palmStartCount=0; }
+    poseHold=null;poseCount=0;palmZone=0;palmCount=0;return;
+  }
   if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;palmZone=0;palmCount=0;$("clbl").textContent="손을 보여주세요";return;}
   const lm=res.landmarks[0];
   const g=classify(lm);
@@ -478,7 +497,7 @@ function draw(res){
   ctx.fillStyle="rgba(30,127,181,.9)";ctx.fill();
 }
 
-/* 시작 버튼: 카메라 권한 요청 → 실패 시 터치 전용 */
+/* 시작 버튼 클릭 → 카메라 시작 + 오버레이 숨김 */
 $("start").addEventListener("click",async()=>{
   try{ const fr=$("frame"); if(!document.fullscreenElement && fr.requestFullscreen) await fr.requestFullscreen(); }catch(_){}
   $("overlay").style.display="none";
@@ -487,6 +506,14 @@ $("start").addEventListener("click",async()=>{
   try{ if(!landmarker) await initHand(); if(!video.srcObject) await startCamera(); }
   catch(err){ console.warn("gesture disabled:",err); $("cam").classList.remove("on"); }
 });
+
+/* 페이지 로드 3초 후 카메라 자동 시작 (손바닥 감지 대기) */
+setTimeout(async()=>{
+  try{
+    if(!landmarker) await initHand();
+    if(!video.srcObject) await startCamera();
+  } catch(err){ console.warn("auto camera failed:",err); }
+}, 3000);
 
 /* 종료하기 → 카메라/전체화면 해제 후 첫(시작) 화면으로 복귀 */
 function exitKiosk(){
