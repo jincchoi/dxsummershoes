@@ -56,13 +56,17 @@
     background:var(--bg);container-type:inline-size;overflow:hidden}
   #app{position:absolute;inset:0;display:flex;flex-direction:column}
 
-  header{display:flex;align-items:center;justify-content:space-between;padding:var(--header-pt) var(--pad-x) 1cqw;flex:0 0 auto}
+  header{display:flex;align-items:center;gap:2cqw;padding:var(--header-pt) var(--pad-x) 1cqw;flex:0 0 auto}
   /* 로고 PNG 좌측 여백(폭의 6.73%) 보정 → 로고 시작점을 이미지 좌측 끝선과 정렬 (로고 높이에 비례) */
   .brand-logo{height:var(--logo-h);width:auto;display:block;margin-left:calc(var(--logo-h) * -0.2427)}
   .langs{display:flex;gap:1.2cqw}
   .lang{font-family:var(--font);font-size:var(--lang-size);color:var(--muted);background:transparent;
     border:0.12cqw solid var(--line-2);border-radius:3cqw;padding:1.4cqw 2.8cqw;cursor:pointer;line-height:1}
   .lang.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  /* 종료(END) 버튼 — 헤더 우측 끝(언어 버튼을 좌측으로 밀어냄) */
+  #exitBtn{margin-left:auto;display:none;font-family:var(--font);font-size:var(--lang-size);font-weight:700;
+    color:#fff;background:var(--accent);border:0.12cqw solid var(--accent);border-radius:3cqw;
+    padding:1.4cqw 3.4cqw;cursor:pointer;line-height:1;letter-spacing:.1cqw}
 
   #content{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0 var(--pad-x);will-change:transform}
   .pbar{display:flex;gap:1.5cqw;padding:0 0 var(--pbar-mb);flex:0 0 auto}
@@ -137,9 +141,6 @@
   .ovlang.on{background:#fff;color:var(--ink);border-color:#fff}
   #start{font-family:var(--font);font-size:3.4cqw;font-weight:600;color:#fff;background:var(--accent);
     border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:1cqw}
-  #exitBtn{position:absolute;top:2.4cqw;right:2.4cqw;z-index:15;display:none;font-family:var(--font);
-    font-size:2.3cqw;font-weight:600;color:#fff;background:rgba(33,31,27,.5);
-    border:0.16cqw solid rgba(255,255,255,.45);border-radius:5cqw;padding:1.5cqw 3.4cqw;cursor:pointer;line-height:1}
   .ghand{font-size:9cqw;animation:palm 1.4s ease-in-out infinite}
   @keyframes palm{0%,100%{transform:translateX(-2.6cqw) rotate(-6deg)}50%{transform:translateX(2.6cqw) rotate(6deg)}}
   @media(prefers-reduced-motion:reduce){.ghand{animation:none}}
@@ -151,6 +152,7 @@
     <header>
       <img class="brand-logo" src="LOGO_gREY-01.png" alt="Discovery Expedition">
       <div class="langs" id="langs"></div>
+      <button id="exitBtn">END</button>
     </header>
     <div id="content">
       <div class="pbar" id="pbar"></div>
@@ -174,7 +176,6 @@
     <p id="ovGuide"></p>
     <button id="start"></button>
   </div>
-  <button id="exitBtn"></button>
 </div>
 
 <script type="module">
@@ -185,20 +186,20 @@ const CONFIG={ POSE_FRAMES:6, PALM_FRAMES:4, COOLDOWN_MS:1200, IMG_COOLDOWN_MS:7
 
 /* ===== 다국어 라벨 ===== */
 const T={
-  kr:{lang:"한국어",hint:"🖐 손바닥 좌·우 = 이미지 · ✌ 이전 상품 · ✊ 다음 상품"},
-  en:{lang:"EN",hint:"🖐 palm left/right = image · ✌ prev · ✊ next"},
-  cn:{lang:"中文",hint:"🖐 手掌左右 = 图片 · ✌ 上一款 · ✊ 下一款"},
-  jp:{lang:"日本語",hint:"🖐 手のひら左右 = 画像 · ✌ 前の商品 · ✊ 次の商品"}
+  kr:{lang:"한국어",hint:"🖐 좌·우 이미지 · ✌ 이전 · ✊ 다음 상품 · 👍 컬러"},
+  en:{lang:"EN",hint:"🖐 image · ✌ prev · ✊ next · 👍 color"},
+  cn:{lang:"中文",hint:"🖐 图片 · ✌ 上一 · ✊ 下一 · 👍 颜色"},
+  jp:{lang:"日本語",hint:"🖐 画像 · ✌ 前 · ✊ 次 · 👍 カラー"}
 };
 const F={best:{kr:"베스트",en:"Best",cn:"热卖",jp:"ベスト"},new:{kr:"26SS 신상품",en:"26SS New",cn:"26SS 新品",jp:"26SS NEW"}};
 const VIEW={model:{kr:"모델컷",en:"Model",cn:"模特",jp:"モデル"},product:{kr:"제품컷",en:"Product",cn:"产品",jp:"製品"}};
 const SPEC={wt:{kr:"무게",en:"Weight",cn:"重量",jp:"重さ"},hl:{kr:"굽 높이",en:"Heel",cn:"跟高",jp:"ヒール高"}};
 /* ===== 시작 화면 안내 (언어별) ===== */
 const INTRO={
-  kr:{title:"손동작으로 둘러보세요",guide:"🖐 손바닥 : 화면 좌·우로 옮겨 이미지 넘기기<br>✌ 브이 : 이전 상품 &nbsp;·&nbsp; ✊ 주먹 : 다음 상품<br>(화면 드래그·컬러칩으로도 이용 가능)",start:"시작하기",exit:"종료하기"},
-  en:{title:"Browse with gestures",guide:"🖐 Palm : move left/right to flip images<br>✌ V sign : previous product &nbsp;·&nbsp; ✊ Fist : next product<br>(You can also drag or tap a color chip)",start:"Start",exit:"Exit"},
-  cn:{title:"用手势浏览",guide:"🖐 手掌 : 左右移动切换图片<br>✌ V手势 : 上一款 &nbsp;·&nbsp; ✊ 拳头 : 下一款<br>(也可拖动屏幕或点击颜色)",start:"开始",exit:"退出"},
-  jp:{title:"ジェスチャーで操作",guide:"🖐 手のひら : 左右に動かして画像切替<br>✌ ピース : 前の商品 &nbsp;·&nbsp; ✊ グー : 次の商品<br>(ドラッグ・カラーチップも可)",start:"スタート",exit:"終了"}
+  kr:{title:"손짓으로 둘러보세요",guide:"카메라에 손을 보여주시면 손동작으로 제품을 둘러볼 수 있어요.<br><br>🖐 <b>손바닥</b>을 좌·우로 움직여 이미지를 넘겨보세요<br>✌ <b>브이</b>는 이전 상품, ✊ <b>주먹</b>은 다음 상품<br>👍 <b>따봉</b>으로 다른 컬러도 확인해 보세요<br><br>화면을 터치하거나 컬러칩을 눌러도 됩니다.",start:"시작하기",exit:"종료하기"},
+  en:{title:"Browse with a wave of your hand",guide:"Show your hand to the camera to explore the shoes with simple gestures.<br><br>🖐 Move your <b>palm</b> left or right to flip through images<br>✌ <b>V sign</b> for the previous style, ✊ <b>fist</b> for the next<br>👍 <b>Thumbs-up</b> to see the other colors<br><br>You can also tap the screen or a color chip.",start:"Start",exit:"Exit"},
+  cn:{title:"挥挥手即可浏览",guide:"将手伸到摄像头前，即可用手势轻松浏览商品。<br><br>🖐 左右移动<b>手掌</b>切换图片<br>✌ <b>V手势</b>看上一款，✊ <b>拳头</b>看下一款<br>👍 <b>点赞</b>查看其他颜色<br><br>也可直接触摸屏幕或点击颜色。",start:"开始",exit:"退出"},
+  jp:{title:"手の動きで見てみましょう",guide:"カメラに手をかざすと、ジェスチャーで商品を見られます。<br><br>🖐 <b>手のひら</b>を左右に動かして画像を切り替え<br>✌ <b>ピース</b>で前の商品、✊ <b>グー</b>で次の商品<br>👍 <b>サムズアップ</b>で別のカラーを確認<br><br>画面タッチやカラーチップでも操作できます。",start:"スタート",exit:"終了"}
 };
 
 /* 이미지 묶음 헬퍼 — 모델컷 → 제품컷 순서로 결합 */
@@ -348,7 +349,7 @@ function shoeStep(d){const ns=Math.max(0,Math.min(PRODUCTS.length-1,shoe+d));con
   requestAnimationFrame(()=>{content.style.transition="transform .3s ease, opacity .3s ease";content.style.transform="translateY(0)";content.style.opacity="1";});}
 function renderOverlay(){const t=INTRO[lang];
   $("ovLangs").innerHTML=["kr","en","cn","jp"].map(l=>`<button class="ovlang ${l===lang?"on":""}" onclick="setLang('${l}')">${T[l].lang}</button>`).join("");
-  $("ovTitle").textContent=t.title;$("ovGuide").innerHTML=t.guide;$("start").textContent=t.start;$("exitBtn").textContent=t.exit;}
+  $("ovTitle").textContent=t.title;$("ovGuide").innerHTML=t.guide;$("start").textContent=t.start;}
 window.setLang=l=>{lang=l;renderLangs();renderHint();buildTrack();renderInfo();renderIdots();renderOverlay();resetIdle();};
 window.setColor=k=>setColor(k);
 window.shoeBtn=d=>shoeStep(d);
@@ -388,14 +389,17 @@ stage.addEventListener("pointerup",endPtr);stage.addEventListener("pointercancel
 window.addEventListener("resize",size);
 document.addEventListener("contextmenu",e=>e.preventDefault());
 
-/* 무조작 45초 → 처음으로 */
+/* 무조작 5분 → 처음 가이드(시작) 화면으로 복귀 */
 let idleT=null;
-function resetIdle(){clearTimeout(idleT);idleT=setTimeout(()=>{shoe=0;colorIdx=0;img=0;lang="kr";renderLangs();renderHint();renderInfo();buildTrack();renderIdots();renderPbar();$("hint").style.opacity="1";},45000);}
+function resetIdle(){clearTimeout(idleT);idleT=setTimeout(goIntro,300000);}
+function goIntro(){shoe=0;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();
+  $("exitBtn").style.display="none";$("overlay").style.display="flex";$("hint").style.opacity="1";}
 
 /* 손동작으로 동작 실행 */
 function flash(txt){const f=$("flash");f.textContent=txt;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");}
 function gestureImage(dir){navImage(dir);flash(dir>0?"›":"‹");}
 function gestureProduct(dir){shoeStep(dir);flash(dir>0?"✊":"✌");}
+function gestureColor(){const p=PRODUCTS[shoe];if(p.colors.length<2)return;setColor((colorIdx+1)%p.colors.length);flash("👍");}
 
 /* 초기 렌더 */
 renderLangs();renderHint();renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();resetIdle();
@@ -426,7 +430,10 @@ function loop(){
   requestAnimationFrame(loop);
 }
 function fingersUp(lm){const ext=i=>lm[i].y<lm[i-2].y;return [ext(8),ext(12),ext(16),ext(20)];}
+function thumbUp(lm){ // 네 손가락 접힘 + 엄지가 위로 뻗음
+  return lm[4].y<lm[3].y && lm[3].y<lm[2].y && lm[4].y<lm[5].y && lm[4].y<lm[0].y;}
 function classify(lm){const f=fingersUp(lm);const up=f.filter(Boolean).length;
+  if(up<=1 && thumbUp(lm))return "thumbsup";
   if(up===0)return "fist";
   if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";
   if(up>=3)return "palm";
@@ -434,15 +441,18 @@ function classify(lm){const f=fingersUp(lm);const up=f.filter(Boolean).length;
 let poseHold=null,poseCount=0,palmZone=0,palmCount=0;
 function handle(res){
   const now=performance.now();
+  if($("overlay").style.display!=="none"){poseHold=null;poseCount=0;palmZone=0;palmCount=0;return;}  // 가이드 화면에선 제스처 무시
   if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;palmZone=0;palmCount=0;$("clbl").textContent="손을 보여주세요";return;}
   const lm=res.landmarks[0];
   const g=classify(lm);
-  $("clbl").textContent = g==="fist"?"✊ 다음 상품":g==="scissors"?"✌ 이전 상품":g==="palm"?"🖐 좌·우 = 이미지":"손을 보여주세요";
+  $("clbl").textContent = g==="fist"?"✊ 다음 상품":g==="scissors"?"✌ 이전 상품":g==="thumbsup"?"👍 다른 컬러":g==="palm"?"🖐 좌·우 = 이미지":"손을 보여주세요";
   if(now<cooldownUntil)return;
-  if(g==="fist"||g==="scissors"){               // ✊ 다음 상품 / ✌ 이전 상품
+  if(g==="fist"||g==="scissors"||g==="thumbsup"){ // ✊ 다음 상품 / ✌ 이전 상품 / 👍 다른 컬러
     palmZone=0;palmCount=0;
     if(g===poseHold)poseCount++; else {poseHold=g;poseCount=1;}
-    if(poseCount>=CONFIG.POSE_FRAMES){gestureProduct(g==="fist"?1:-1);cooldownUntil=now+CONFIG.COOLDOWN_MS;poseHold=null;poseCount=0;}
+    if(poseCount>=CONFIG.POSE_FRAMES){
+      if(g==="thumbsup")gestureColor(); else gestureProduct(g==="fist"?1:-1);
+      cooldownUntil=now+CONFIG.COOLDOWN_MS;poseHold=null;poseCount=0;}
   } else if(g==="palm"){                          // 🖐 손바닥 위치(카메라 좌/우)로 이미지 넘김
     poseHold=null;poseCount=0;
     const sx=1-lm[9].x;                           // 화면(미러) 기준 가로 위치 0~1
@@ -463,10 +473,11 @@ function draw(res){
 
 /* 시작 버튼: 카메라 권한 요청 → 실패 시 터치 전용 */
 $("start").addEventListener("click",async()=>{
-  try{ const fr=$("frame"); if(fr.requestFullscreen) await fr.requestFullscreen(); }catch(_){}
+  try{ const fr=$("frame"); if(!document.fullscreenElement && fr.requestFullscreen) await fr.requestFullscreen(); }catch(_){}
   $("overlay").style.display="none";
   $("exitBtn").style.display="block";
-  try{ await initHand(); await startCamera(); }
+  resetIdle();
+  try{ if(!landmarker) await initHand(); if(!video.srcObject) await startCamera(); }
   catch(err){ console.warn("gesture disabled:",err); $("cam").classList.remove("on"); }
 });
 
