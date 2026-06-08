@@ -429,14 +429,15 @@ function loop(){
   }
   requestAnimationFrame(loop);
 }
-function fingersUp(lm){const ext=i=>lm[i].y<lm[i-2].y;return [ext(8),ext(12),ext(16),ext(20)];}
-function thumbUp(lm){ // 네 손가락 접힘 + 엄지가 위로 뻗음
-  return lm[4].y<lm[3].y && lm[3].y<lm[2].y && lm[4].y<lm[5].y && lm[4].y<lm[0].y;}
-function classify(lm){const f=fingersUp(lm);const up=f.filter(Boolean).length;
-  if(up<=1 && thumbUp(lm))return "thumbsup";
-  if(up===0)return "fist";
-  if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";
-  if(up>=3)return "palm";
+const HD=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+// 손목(0) 기준 거리 비율로 폄 판정 — 손 방향(상하/기울기)과 무관하게 동작
+function fingerExt(lm){const w=lm[0],tip=[8,12,16,20],pip=[6,10,14,18];
+  return tip.map((t,i)=>HD(lm[t],w)>HD(lm[pip[i]],w)*1.12);}      // 팁이 PIP보다 손목에서 멀면 폄
+function thumbExt(lm){const w=lm[0];return HD(lm[4],w)>HD(lm[2],w)*1.35;}  // 엄지팁이 엄지MCP보다 충분히 멀면 폄
+function classify(lm){const f=fingerExt(lm),up=f.filter(Boolean).length;
+  if(up<=1)return thumbExt(lm)?"thumbsup":"fist";   // 네 손가락 접힘 → 엄지 폄=👍따봉 / 다 접힘=✊주먹
+  if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";    // 검지+중지=✌브이
+  if(up>=3)return "palm";                            // 활짝=🖐손바닥
   return null;}
 let poseHold=null,poseCount=0,palmZone=0,palmCount=0;
 function handle(res){
