@@ -70,6 +70,7 @@
   #exitBtn{margin-left:auto;display:none;font-family:var(--font);font-size:var(--lang-size);font-weight:700;
     color:#fff;background:var(--accent);border:0.12cqw solid var(--accent);border-radius:3cqw;
     padding:1.4cqw 3.4cqw;cursor:pointer;line-height:1;letter-spacing:.1cqw}
+  /* EXIT 버튼 다국어 레이블은 JS에서 동적 처리 */
 
   #content{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0 var(--pad-x);will-change:transform}
   .pbar{display:flex;gap:1.5cqw;padding:0 0 var(--pbar-mb);flex:0 0 auto}
@@ -147,6 +148,32 @@
   .ghand{font-size:9cqw;animation:palm 1.4s ease-in-out infinite}
   @keyframes palm{0%,100%{transform:translateX(-2.6cqw) rotate(-6deg)}50%{transform:translateX(2.6cqw) rotate(6deg)}}
   @media(prefers-reduced-motion:reduce){.ghand{animation:none}}
+
+  /* 손바닥 감지 프로그레스 링 */
+  #palmProgress{position:absolute;bottom:6cqw;left:50%;transform:translateX(-50%);z-index:25;
+    display:flex;flex-direction:column;align-items:center;gap:1.5cqw;opacity:0;transition:opacity .3s;pointer-events:none}
+  #palmProgress.on{opacity:1}
+  #palmProgress svg{width:12cqw;height:12cqw;filter:drop-shadow(0 0 1.5cqw rgba(30,127,181,.5))}
+  #palmProgress .prog-txt{font-size:2.4cqw;color:#fff;font-weight:600;letter-spacing:.05cqw}
+  .prog-bg{fill:none;stroke:rgba(255,255,255,.2);stroke-width:3}
+  .prog-fg{fill:none;stroke:#1E7FB5;stroke-width:3;stroke-linecap:round;
+    stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset .1s linear;transform:rotate(-90deg);transform-origin:50% 50%}
+
+  /* 카메라 로딩 상태 */
+  .cam-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:#111;z-index:2;transition:opacity .4s}
+  .cam-loading.hidden{opacity:0;pointer-events:none}
+  .cam-spin{width:4cqw;height:4cqw;border:0.4cqw solid rgba(255,255,255,.2);border-top-color:#1E7FB5;
+    border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* 이미지 플레이스홀더 */
+  .img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:#E6E8E6;color:#9AA0A6;font-size:2.8cqw;flex-direction:column;gap:1cqw}
+
+  /* 힌트 개선 — 초기 10초간 유지 */
+  .hint{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:2cqw;
+    color:var(--muted);font-size:var(--hint-size);padding:1cqw 0 1.6cqw;transition:opacity 1s}
 </style>
 </head>
 <body>
@@ -170,7 +197,12 @@
       <div class="info" id="info"></div>
     </div>
     <div class="hint" id="hint"></div>
-    <div class="cam" id="cam"><video id="video" playsinline muted></video><canvas id="cv"></canvas><div class="clbl" id="clbl">손 인식</div></div>
+    <div class="cam" id="cam">
+  <video id="video" playsinline muted></video>
+  <canvas id="cv"></canvas>
+  <div class="clbl" id="clbl">손 인식</div>
+  <div class="cam-loading" id="camLoading"><div class="cam-spin"></div></div>
+</div>
   </div>
   <div id="overlay">
     <div class="ovlangs" id="ovLangs"></div>
@@ -178,6 +210,14 @@
     <h1 id="ovTitle"></h1>
     <p id="ovGuide"></p>
     <button id="start"></button>
+  </div>
+  <!-- 손바닥 감지 프로그레스 링 -->
+  <div id="palmProgress">
+    <svg viewBox="0 0 36 36">
+      <circle class="prog-bg" cx="18" cy="18" r="15.9"/>
+      <circle class="prog-fg" id="progCircle" cx="18" cy="18" r="15.9"/>
+    </svg>
+    <span class="prog-txt" id="progTxt">손바닥을 유지해 주세요</span>
   </div>
 </div>
 
@@ -307,7 +347,7 @@ function buildTrack(){const p=PRODUCTS[shoe],c=curColor();
     // PNG(투명 배경 가능)는 셀에 화이트 배경을 깔고, 투명영역으로 비치는 플레이스홀더 텍스트는 숨김
     const isPng=/\.png(\?|$)/i.test(im.src);
     const cellBg=isPng?' style="background:#fff"':'';
-    return `<div class="cell"${cellBg}>${isPng?'':phl}<img src="${src}" alt="${alt}" onerror="this.remove()"></div>`;}).join("");
+    return `<div class="cell"${cellBg}>${isPng?'':phl}<img src="${src}" alt="${alt}" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\"img-ph\"><span style=\"font-size:5cqw\">🖼</span><span>이미지 준비 중</span></div>')"></div>`;}).join("");
   size();updateOv();}
 function updateOv(){const c=curColor();$("counter").textContent=(img+1)+" / "+c.imgs.length;}
 function renderInfo(){const p=PRODUCTS[shoe],fb=F[p.flag][lang],c=curColor();
@@ -330,7 +370,11 @@ function place(a){
   if((img===0&&off>0)||(img===len-1&&off<0))off*=0.35;
   track.style.transform=`translateX(${-img*IW+off}px)`;
 }
-function dim(){$("hint").style.opacity=".4";}
+let hintTimer=null;
+function dim(){
+  clearTimeout(hintTimer);
+  hintTimer=setTimeout(()=>{ $("hint").style.opacity=".4"; }, 10000);
+}
 function setImg(n){const len=curColor().imgs.length;img=Math.max(0,Math.min(len-1,n));place(true);renderIdots();updateOv();dim();resetIdle();}
 /* 이미지 이동 — 끝까지 가면 다음/이전 상품으로 자동 전환 */
 function navImage(dir){
@@ -353,7 +397,10 @@ function shoeStep(d){const ns=Math.max(0,Math.min(PRODUCTS.length-1,shoe+d));con
 function renderOverlay(){const t=INTRO[lang];
   $("ovLangs").innerHTML=["kr","en","cn","jp"].map(l=>`<button class="ovlang ${l===lang?"on":""}" onclick="setLang('${l}')">${T[l].lang}</button>`).join("");
   $("ovTitle").textContent=t.title;$("ovGuide").innerHTML=t.guide;$("start").textContent=t.start;}
-window.setLang=l=>{lang=l;renderLangs();renderHint();buildTrack();renderInfo();renderIdots();renderOverlay();resetIdle();};
+window.setLang=l=>{lang=l;renderLangs();renderHint();buildTrack();renderInfo();renderIdots();renderOverlay();resetIdle();
+  const exitLabels={kr:"종료하기",en:"Exit",cn:"退出",jp:"終了"};
+  $("exitBtn").textContent=exitLabels[l]||"Exit";
+};
 window.setColor=k=>setColor(k);
 window.shoeBtn=d=>shoeStep(d);
 window.shoeJump=i=>shoeStep(i-shoe);
@@ -396,7 +443,8 @@ document.addEventListener("contextmenu",e=>e.preventDefault());
 let idleT=null;
 function resetIdle(){clearTimeout(idleT);idleT=setTimeout(goIntro,300000);}
 function goIntro(){shoe=0;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();
-  $("exitBtn").style.display="none";$("overlay").style.display="flex";$("hint").style.opacity="1";}
+  $("exitBtn").style.display="none";$("overlay").style.display="flex";$("hint").style.opacity="1";
+  palmStartCount=0;updatePalmProgress(0);$("cam").classList.add("on");}
 
 /* 손동작으로 동작 실행 */
 function flash(txt){const f=$("flash");f.textContent=txt;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");}
@@ -406,6 +454,8 @@ function gestureColor(){const p=PRODUCTS[shoe];if(p.colors.length<2)return;setCo
 
 /* 초기 렌더 */
 renderLangs();renderHint();renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();resetIdle();
+const _exitLabels={kr:"종료하기",en:"Exit",cn:"退出",jp:"終了"};
+$("exitBtn").textContent=_exitLabels[lang]||"Exit";
 
 /* ===== MediaPipe 손 추적 ===== */
 const video=$("video"),cv=$("cv"),ctx=cv.getContext("2d");
@@ -422,6 +472,9 @@ async function startCamera(){
   video.srcObject=stream; await video.play();
   $("cam").classList.add("on");
   cv.width=video.videoWidth||480; cv.height=video.videoHeight||640;
+  // 카메라 준비 완료 — 로딩 스피너 숨기기
+  const loading=$("camLoading");
+  if(loading) loading.classList.add("hidden");
   requestAnimationFrame(loop);
 }
 function loop(){
@@ -448,6 +501,17 @@ function classify(lm){const f=fingerExt(lm),up=f.filter(Boolean).length;
 let poseHold=null,poseCount=0,palmZone=0,palmCount=0;
 let palmStartCount=0;
 const PALM_START_FRAMES=18;
+
+function updatePalmProgress(count){
+  const prog=$("palmProgress");
+  const circle=$("progCircle");
+  if(!prog||!circle)return;
+  if(count<=0){prog.classList.remove("on");circle.style.strokeDashoffset="100";return;}
+  prog.classList.add("on");
+  const pct=count/PALM_START_FRAMES;
+  circle.style.strokeDashoffset=String(100-(pct*100));
+}
+
 function handle(res){
   const now=performance.now();
   if($("overlay").style.display!=="none"){
@@ -456,16 +520,27 @@ function handle(res){
       const f=fingerExt(lm),up=f.filter(Boolean).length;
       if(up>=4&&!isOK(lm)){
         palmStartCount++;
+        updatePalmProgress(palmStartCount);
         $("clbl").textContent="🖐 손바닥 인식 중...";
         if(palmStartCount>=PALM_START_FRAMES){
           palmStartCount=0;
+          updatePalmProgress(0);
           $("overlay").style.display="none";
           $("exitBtn").style.display="block";
+          const exitLabels={kr:"종료하기",en:"Exit",cn:"退出",jp:"終了"};
+          $("exitBtn").textContent=exitLabels[lang]||"Exit";
           resetIdle();
           return;
         }
-      } else { palmStartCount=0; $("clbl").textContent="손바닥을 보여주세요"; }
-    } else { palmStartCount=0; }
+      } else {
+        palmStartCount=0;
+        updatePalmProgress(0);
+        $("clbl").textContent="손바닥을 보여주세요";
+      }
+    } else {
+      palmStartCount=0;
+      updatePalmProgress(0);
+    }
     poseHold=null;poseCount=0;palmZone=0;palmCount=0;return;
   }
   if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;palmZone=0;palmCount=0;$("clbl").textContent="손을 보여주세요";return;}
@@ -515,14 +590,14 @@ setTimeout(async()=>{
   } catch(err){ console.warn("auto camera failed:",err); }
 }, 3000);
 
-/* 종료하기 → 카메라/전체화면 해제 후 첫(시작) 화면으로 복귀 */
+/* 종료하기 → 카메라 유지, 오버레이로 복귀 (손바닥 감지 계속 가능) */
 function exitKiosk(){
-  try{ if(video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;} }catch(_){}
-  $("cam").classList.remove("on");
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   shoe=0;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();
   $("exitBtn").style.display="none";
   $("overlay").style.display="flex";
+  palmStartCount=0;updatePalmProgress(0);
+  $("cam").classList.add("on");
 }
 $("exitBtn").addEventListener("click",exitKiosk);
 document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement && $("exitBtn").style.display==="block") exitKiosk(); });
