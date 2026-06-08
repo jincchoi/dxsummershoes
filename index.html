@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Discovery Expedition — Summer Shoes (Gesture)</title>
 <!--
-  매장 체험형 태블릿 — 손동작 인식 버전 (세로형 / Portrait, 1200 x 2000)  · FINAL v3
+  매장 체험형 태블릿 — 손동작 인식 버전 (세로형 / Portrait, 1400 x 2000)  · FINAL v3
   ─────────────────────────────────────────────────────────────
   · ✌ 가위 = 이전 상품 / ✊ 주먹 = 다음 상품 · 손 좌우 = 이미지 · 컬러칩 = 컬러 전환
   · 간격/위치/크기는 아래 :root 의 --변수 로 조정합니다(단위 cqw = 화면폭의 1%).
@@ -52,7 +52,7 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;margin:0;background:#000;overflow:hidden;font-family:var(--font);
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-  #frame{height:100dvh;aspect-ratio:1200/2000;max-width:100vw;margin:0 auto;position:relative;
+  #frame{height:100dvh;aspect-ratio:1400/2000;max-width:100vw;margin:0 auto;position:relative;
     background:var(--bg);container-type:inline-size;overflow:hidden}
   #app{position:absolute;inset:0;display:flex;flex-direction:column}
 
@@ -73,7 +73,8 @@
   .viewport{position:relative;height:100%;width:100%;border-radius:var(--img-radius);overflow:hidden;background:#E6E8E6}
   .track{display:flex;height:100%;will-change:transform}
   .cell{flex:0 0 auto;height:100%;position:relative;overflow:hidden;background:#E6E8E6}
-  .cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+    -webkit-user-drag:none;user-select:none;pointer-events:none}
   /* 모델컷: 같은 이미지를 흐리게 확대해 배경을 채우고(bgblur), 원본은 잘림 없이 전체 표시(fg/contain) */
   .cell img.bgblur{object-fit:cover;filter:blur(1.8cqw) saturate(1.08);transform:scale(1.12);z-index:0}
   .cell img.fg{object-fit:contain;z-index:1}
@@ -127,34 +128,21 @@
   @keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}30%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
 
   #overlay{position:absolute;inset:0;z-index:20;background:rgba(18,40,56,.94);color:#fff;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.5cqw;text-align:center;padding:9cqw}
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2cqw;text-align:center;padding:9cqw}
   #overlay h1{font-size:5cqw;font-weight:700;margin:0}
   #overlay p{font-size:3cqw;color:#e8e3da;margin:0;line-height:1.6}
+  .ovlangs{display:flex;gap:1.8cqw;flex-wrap:wrap;justify-content:center;margin-bottom:1cqw}
+  .ovlang{font-family:var(--font);font-size:2.9cqw;color:#fff;background:rgba(255,255,255,.12);
+    border:0.2cqw solid rgba(255,255,255,.55);border-radius:6cqw;padding:1.5cqw 4cqw;cursor:pointer;line-height:1}
+  .ovlang.on{background:#fff;color:var(--ink);border-color:#fff}
   #start{font-family:var(--font);font-size:3.4cqw;font-weight:600;color:#fff;background:var(--accent);
-    border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:2cqw}
-  .ghand{font-size:9cqw;animation:wave 1.6s ease-in-out infinite}
-  @keyframes wave{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+    border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:1cqw}
+  #exitBtn{position:absolute;top:2.4cqw;right:2.4cqw;z-index:15;display:none;font-family:var(--font);
+    font-size:2.3cqw;font-weight:600;color:#fff;background:rgba(33,31,27,.5);
+    border:0.16cqw solid rgba(255,255,255,.45);border-radius:5cqw;padding:1.5cqw 3.4cqw;cursor:pointer;line-height:1}
+  .ghand{font-size:9cqw;animation:palm 1.4s ease-in-out infinite}
+  @keyframes palm{0%,100%{transform:translateX(-2.6cqw) rotate(-6deg)}50%{transform:translateX(2.6cqw) rotate(6deg)}}
   @media(prefers-reduced-motion:reduce){.ghand{animation:none}}
-
-  /* ===== ⚙ 실시간 조절 패널 (배포 시 닫아두면 됨) ===== */
-  #ctrlToggle{position:fixed;top:12px;right:12px;z-index:50;width:42px;height:42px;border-radius:50%;
-    border:0;background:rgba(33,31,27,.85);color:#fff;font-size:20px;cursor:pointer;line-height:1;
-    box-shadow:0 2px 10px rgba(0,0,0,.25)}
-  #ctrl{position:fixed;top:60px;right:12px;z-index:50;width:280px;max-width:80vw;
-    background:rgba(255,255,255,.97);border:1px solid rgba(33,31,27,.15);border-radius:14px;
-    box-shadow:0 8px 30px rgba(0,0,0,.22);padding:14px 16px;font-family:var(--font);color:#211F1B;display:none}
-  #ctrl.open{display:block}
-  #ctrl h3{margin:0 0 10px;font-size:14px;font-weight:700}
-  .cg{margin-bottom:12px}
-  .cg label{display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:5px}
-  .cg label b{color:var(--accent);font-weight:700}
-  .cg input[type=range]{width:100%;accent-color:var(--accent)}
-  #ctrlCss{width:100%;font-size:11px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#444;
-    background:#F2EEE6;border:1px solid rgba(33,31,27,.12);border-radius:8px;padding:8px;resize:none;line-height:1.5}
-  .cbtns{display:flex;gap:8px;margin-top:8px}
-  .cbtns button{flex:1;font-family:var(--font);font-size:12px;font-weight:600;padding:8px;border-radius:8px;cursor:pointer;border:0}
-  #ctrlCopy{background:var(--accent);color:#fff}
-  #ctrlReset{background:#E5E0D6;color:#211F1B}
 </style>
 </head>
 <body>
@@ -180,68 +168,38 @@
     <div class="cam" id="cam"><video id="video" playsinline muted></video><canvas id="cv"></canvas><div class="clbl" id="clbl">손 인식</div></div>
   </div>
   <div id="overlay">
-    <div class="ghand">&#128075;</div>
-    <h1>손으로 둘러보세요</h1>
-    <p>✌ 가위 = 이전 신발 · ✊ 주먹 = 다음 신발<br>손을 좌우로 휙 움직이면 이미지가 넘어가요.<br>(화면 터치 · 컬러칩으로도 이용할 수 있어요)</p>
-    <button id="start">시작하기</button>
+    <div class="ovlangs" id="ovLangs"></div>
+    <div class="ghand">&#128400;</div>
+    <h1 id="ovTitle"></h1>
+    <p id="ovGuide"></p>
+    <button id="start"></button>
   </div>
-</div>
-
-<!-- ⚙ 실시간 조절 패널 -->
-<button id="ctrlToggle" title="조절 패널">&#9881;</button>
-<div id="ctrl">
-  <h3>실시간 조절</h3>
-  <div class="cg">
-    <label>상단 여백 <b id="v-header-pt"></b></label>
-    <input type="range" id="r-header-pt" min="0" max="15" step="0.1">
-  </div>
-  <div class="cg">
-    <label>로고 높이 <b id="v-logo-h"></b></label>
-    <input type="range" id="r-logo-h" min="2" max="12" step="0.1">
-  </div>
-  <div class="cg">
-    <label>상품명 ↔ 컬러칩 간격 <b id="v-name-chip-gap"></b></label>
-    <input type="range" id="r-name-chip-gap" min="0" max="14" step="0.1">
-  </div>
-  <div class="cg">
-    <label>영문서브 위치 <b id="v-ensub-top"></b></label>
-    <input type="range" id="r-ensub-top" min="8" max="22" step="0.1">
-  </div>
-  <div class="cg">
-    <label>설명문 위치 <b id="v-desc-top"></b></label>
-    <input type="range" id="r-desc-top" min="10" max="26" step="0.1">
-  </div>
-  <div class="cg">
-    <label>스펙/구분선 위치 <b id="v-spec-top"></b></label>
-    <input type="range" id="r-spec-top" min="18" max="36" step="0.1">
-  </div>
-  <div class="cg">
-    <label>정보영역 높이 <b id="v-info-h"></b></label>
-    <input type="range" id="r-info-h" min="24" max="42" step="0.1">
-  </div>
-  <textarea id="ctrlCss" rows="8" readonly></textarea>
-  <div class="cbtns">
-    <button id="ctrlCopy">현재값 복사</button>
-    <button id="ctrlReset">초기화</button>
-  </div>
+  <button id="exitBtn"></button>
 </div>
 
 <script type="module">
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
 
 /* ===== 손동작 민감도 설정 ===== */
-const CONFIG={ POSE_FRAMES:6, COOLDOWN_MS:1200, SWIPE_TH:0.13, SWIPE_MS:260, SWIPE_INVERT:true };
+const CONFIG={ POSE_FRAMES:6, PALM_FRAMES:4, COOLDOWN_MS:1200, IMG_COOLDOWN_MS:700, ZONE:0.62 };
 
 /* ===== 다국어 라벨 ===== */
 const T={
-  kr:{lang:"한국어",hint:"✌ 가위 = 이전 · ✊ 주먹 = 다음 · 손 좌우 = 이미지"},
-  en:{lang:"EN",hint:"✌ prev · ✊ next · hand ←→ = image"},
-  cn:{lang:"中文",hint:"✌ 上一个 · ✊ 下一个 · 手左右 = 图片"},
-  jp:{lang:"日本語",hint:"✌ 前へ · ✊ 次へ · 手 左右 = 画像"}
+  kr:{lang:"한국어",hint:"🖐 손바닥 좌·우 = 이미지 · ✌ 이전 상품 · ✊ 다음 상품"},
+  en:{lang:"EN",hint:"🖐 palm left/right = image · ✌ prev · ✊ next"},
+  cn:{lang:"中文",hint:"🖐 手掌左右 = 图片 · ✌ 上一款 · ✊ 下一款"},
+  jp:{lang:"日本語",hint:"🖐 手のひら左右 = 画像 · ✌ 前の商品 · ✊ 次の商品"}
 };
 const F={best:{kr:"베스트",en:"Best",cn:"热卖",jp:"ベスト"},new:{kr:"26SS 신상품",en:"26SS New",cn:"26SS 新品",jp:"26SS NEW"}};
 const VIEW={model:{kr:"모델컷",en:"Model",cn:"模特",jp:"モデル"},product:{kr:"제품컷",en:"Product",cn:"产品",jp:"製品"}};
 const SPEC={wt:{kr:"무게",en:"Weight",cn:"重量",jp:"重さ"},hl:{kr:"굽 높이",en:"Heel",cn:"跟高",jp:"ヒール高"}};
+/* ===== 시작 화면 안내 (언어별) ===== */
+const INTRO={
+  kr:{title:"손동작으로 둘러보세요",guide:"🖐 손바닥 : 화면 좌·우로 옮겨 이미지 넘기기<br>✌ 브이 : 이전 상품 &nbsp;·&nbsp; ✊ 주먹 : 다음 상품<br>(화면 드래그·컬러칩으로도 이용 가능)",start:"시작하기",exit:"종료하기"},
+  en:{title:"Browse with gestures",guide:"🖐 Palm : move left/right to flip images<br>✌ V sign : previous product &nbsp;·&nbsp; ✊ Fist : next product<br>(You can also drag or tap a color chip)",start:"Start",exit:"Exit"},
+  cn:{title:"用手势浏览",guide:"🖐 手掌 : 左右移动切换图片<br>✌ V手势 : 上一款 &nbsp;·&nbsp; ✊ 拳头 : 下一款<br>(也可拖动屏幕或点击颜色)",start:"开始",exit:"退出"},
+  jp:{title:"ジェスチャーで操作",guide:"🖐 手のひら : 左右に動かして画像切替<br>✌ ピース : 前の商品 &nbsp;·&nbsp; ✊ グー : 次の商品<br>(ドラッグ・カラーチップも可)",start:"スタート",exit:"終了"}
+};
 
 /* 이미지 묶음 헬퍼 — 모델컷 → 제품컷 순서로 결합 */
 const mk=(model,product)=>[
@@ -361,9 +319,26 @@ function renderIdots(){const c=curColor();$("idots").innerHTML=c.imgs.map((im,k)
 function renderPbar(){$("pbar").innerHTML=PRODUCTS.map((p,i)=>`<button class="seg ${i===shoe?"on":""}" onclick="shoeJump(${i})" aria-label="${p.nameEn}"></button>`).join("");}
 function renderHint(){$("hint").innerHTML=`<span>${T[lang].hint}</span>`;}
 function size(){IW=ivp.clientWidth;[...track.children].forEach(c=>c.style.width=IW+"px");place(false);}
-function place(a){track.style.transition=a?"transform .3s ease":"none";track.style.transform=`translateX(${-img*IW+(axis==="x"?dx:0)}px)`;}
+function place(a){
+  track.style.transition=a?"transform .38s cubic-bezier(.22,.61,.36,1)":"none";
+  let off=axis==="x"?dx:0;
+  const len=curColor().imgs.length;            // 양끝에서 고무줄 저항
+  if((img===0&&off>0)||(img===len-1&&off<0))off*=0.35;
+  track.style.transform=`translateX(${-img*IW+off}px)`;
+}
 function dim(){$("hint").style.opacity=".4";}
 function setImg(n){const len=curColor().imgs.length;img=Math.max(0,Math.min(len-1,n));place(true);renderIdots();updateOv();dim();resetIdle();}
+/* 이미지 이동 — 끝까지 가면 다음/이전 상품으로 자동 전환 */
+function navImage(dir){
+  const len=curColor().imgs.length, n=img+dir;
+  if(n>=0&&n<len){setImg(n);return;}
+  if(dir>0){                                     // 마지막 이미지 다음 → 다음 상품 첫 이미지
+    if(shoe<PRODUCTS.length-1)shoeStep(1); else setImg(len-1);
+  }else{                                          // 첫 이미지 이전 → 이전 상품 마지막 이미지
+    if(shoe>0){shoeStep(-1);img=curColor().imgs.length-1;renderIdots();updateOv();place(true);dim();resetIdle();}
+    else setImg(0);
+  }
+}
 function setColor(k){const p=PRODUCTS[shoe];k=Math.max(0,Math.min(p.colors.length-1,k));if(k===colorIdx)return;
   colorIdx=k;img=0;renderInfo();buildTrack();renderIdots();dim();resetIdle();}
 function shoeStep(d){const ns=Math.max(0,Math.min(PRODUCTS.length-1,shoe+d));const dir=Math.sign(d)||1;
@@ -371,21 +346,45 @@ function shoeStep(d){const ns=Math.max(0,Math.min(PRODUCTS.length-1,shoe+d));con
   shoe=ns;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();dim();resetIdle();
   content.style.transition="none";content.style.transform=`translateY(${dir*4}cqw)`;content.style.opacity=".4";
   requestAnimationFrame(()=>{content.style.transition="transform .3s ease, opacity .3s ease";content.style.transform="translateY(0)";content.style.opacity="1";});}
-window.setLang=l=>{lang=l;renderLangs();renderHint();buildTrack();renderInfo();renderIdots();resetIdle();};
+function renderOverlay(){const t=INTRO[lang];
+  $("ovLangs").innerHTML=["kr","en","cn","jp"].map(l=>`<button class="ovlang ${l===lang?"on":""}" onclick="setLang('${l}')">${T[l].lang}</button>`).join("");
+  $("ovTitle").textContent=t.title;$("ovGuide").innerHTML=t.guide;$("start").textContent=t.start;$("exitBtn").textContent=t.exit;}
+window.setLang=l=>{lang=l;renderLangs();renderHint();buildTrack();renderInfo();renderIdots();renderOverlay();resetIdle();};
 window.setColor=k=>setColor(k);
 window.shoeBtn=d=>shoeStep(d);
 window.shoeJump=i=>shoeStep(i-shoe);
 window.imgDot=k=>setImg(k);
 
 /* 터치 스와이프 = 이미지(좌우)만 */
-stage.addEventListener("pointerdown",e=>{drag=true;axis=null;x0=e.clientX;y0=e.clientY;dx=0;dy=0;});
-stage.addEventListener("pointermove",e=>{if(!drag)return;dx=e.clientX-x0;dy=e.clientY-y0;
-  if(!axis&&(Math.abs(dx)>7||Math.abs(dy)>7))axis=Math.abs(dx)>=Math.abs(dy)?"x":"y";
-  if(axis==="x")place(false);});
-function endPtr(){if(!drag)return;drag=false;
-  if(axis==="x"){const th=IW*0.15;let n=img;if(dx<-th)n++;else if(dx>th)n--;setImg(n);}
-  axis=null;resetIdle();}
-stage.addEventListener("pointerup",endPtr);stage.addEventListener("pointercancel",endPtr);stage.addEventListener("pointerleave",endPtr);
+let vx=0,lastX=0,lastT=0;
+stage.addEventListener("dragstart",e=>e.preventDefault());
+stage.addEventListener("pointerdown",e=>{
+  drag=true;axis=null;x0=e.clientX;y0=e.clientY;dx=0;dy=0;
+  vx=0;lastX=e.clientX;lastT=e.timeStamp;
+  track.style.transition="none";stage.style.cursor="grabbing";
+  try{stage.setPointerCapture(e.pointerId);}catch(_){}
+});
+stage.addEventListener("pointermove",e=>{if(!drag)return;
+  dx=e.clientX-x0;dy=e.clientY-y0;
+  if(!axis&&(Math.abs(dx)>6||Math.abs(dy)>6))axis=Math.abs(dx)>=Math.abs(dy)?"x":"y";
+  if(axis==="x"){
+    e.preventDefault();
+    const now=e.timeStamp,dt=now-lastT;
+    if(dt>0){vx=(e.clientX-lastX)/dt;lastX=e.clientX;lastT=now;}  // px/ms
+    place(false);
+  }
+});
+function endPtr(e){if(!drag)return;drag=false;stage.style.cursor="grab";
+  try{if(e&&e.pointerId!=null)stage.releasePointerCapture(e.pointerId);}catch(_){}
+  const wasX=axis==="x";let dir=0;
+  if(wasX){const dist=IW*0.18,flick=0.5;        // 거리 18% 또는 플릭 속도로 넘김
+    if(dx<-dist||vx<-flick)dir=1;else if(dx>dist||vx>flick)dir=-1;}
+  dx=0;dy=0;axis=null;
+  if(wasX&&dir)navImage(dir);                    // 상품 경계 넘으면 다음/이전 상품으로
+  else if(wasX){place(true);resetIdle();}        // 임계 미달 → 제자리 복귀
+  else resetIdle();
+}
+stage.addEventListener("pointerup",endPtr);stage.addEventListener("pointercancel",endPtr);
 window.addEventListener("resize",size);
 document.addEventListener("contextmenu",e=>e.preventDefault());
 
@@ -395,11 +394,11 @@ function resetIdle(){clearTimeout(idleT);idleT=setTimeout(()=>{shoe=0;colorIdx=0
 
 /* 손동작으로 동작 실행 */
 function flash(txt){const f=$("flash");f.textContent=txt;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");}
-function gestureImage(dir){setImg(img+dir);flash(dir>0?"›":"‹");}
+function gestureImage(dir){navImage(dir);flash(dir>0?"›":"‹");}
 function gestureProduct(dir){shoeStep(dir);flash(dir>0?"✊":"✌");}
 
 /* 초기 렌더 */
-renderLangs();renderHint();renderInfo();buildTrack();renderIdots();renderPbar();resetIdle();
+renderLangs();renderHint();renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();resetIdle();
 
 /* ===== MediaPipe 손 추적 ===== */
 const video=$("video"),cv=$("cv"),ctx=cv.getContext("2d");
@@ -430,31 +429,29 @@ function fingersUp(lm){const ext=i=>lm[i].y<lm[i-2].y;return [ext(8),ext(12),ext
 function classify(lm){const f=fingersUp(lm);const up=f.filter(Boolean).length;
   if(up===0)return "fist";
   if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";
+  if(up>=3)return "palm";
   return null;}
-let poseHold=null,poseCount=0,mhist=[];
+let poseHold=null,poseCount=0,palmZone=0,palmCount=0;
 function handle(res){
   const now=performance.now();
-  if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;mhist=[];$("clbl").textContent="손을 보여주세요";return;}
+  if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;palmZone=0;palmCount=0;$("clbl").textContent="손을 보여주세요";return;}
   const lm=res.landmarks[0];
   const g=classify(lm);
-  $("clbl").textContent = g==="fist"?"✊ 다음":(g==="scissors"?"✌ 이전":"✋ 좌우 = 이미지");
+  $("clbl").textContent = g==="fist"?"✊ 다음 상품":g==="scissors"?"✌ 이전 상품":g==="palm"?"🖐 좌·우 = 이미지":"손을 보여주세요";
   if(now<cooldownUntil)return;
-  if(g){
-    mhist=[];
+  if(g==="fist"||g==="scissors"){               // ✊ 다음 상품 / ✌ 이전 상품
+    palmZone=0;palmCount=0;
     if(g===poseHold)poseCount++; else {poseHold=g;poseCount=1;}
     if(poseCount>=CONFIG.POSE_FRAMES){gestureProduct(g==="fist"?1:-1);cooldownUntil=now+CONFIG.COOLDOWN_MS;poseHold=null;poseCount=0;}
-  } else {
+  } else if(g==="palm"){                          // 🖐 손바닥 위치(카메라 좌/우)로 이미지 넘김
     poseHold=null;poseCount=0;
-    mhist.push({x:lm[9].x,t:now});
-    while(mhist.length&&now-mhist[0].t>CONFIG.SWIPE_MS)mhist.shift();
-    if(mhist.length>=2){
-      const dx=mhist[mhist.length-1].x-mhist[0].x;
-      if(Math.abs(dx)>=CONFIG.SWIPE_TH){
-        let dir=dx>0?1:-1; if(CONFIG.SWIPE_INVERT)dir=-dir;
-        gestureImage(dir);cooldownUntil=now+CONFIG.COOLDOWN_MS;mhist=[];
-      }
-    }
-  }
+    const sx=1-lm[9].x;                           // 화면(미러) 기준 가로 위치 0~1
+    const zone = sx>CONFIG.ZONE?1 : sx<(1-CONFIG.ZONE)?-1 : 0;   // 우측=다음, 좌측=이전, 중앙=대기
+    if(zone!==0){
+      palmCount=(zone===palmZone)?palmCount+1:1; palmZone=zone;
+      if(palmCount>=CONFIG.PALM_FRAMES){gestureImage(zone>0?1:-1);cooldownUntil=now+CONFIG.IMG_COOLDOWN_MS;palmCount=0;}
+    } else {palmZone=0;palmCount=0;}
+  } else {poseHold=null;poseCount=0;palmZone=0;palmCount=0;}
 }
 function draw(res){
   ctx.clearRect(0,0,cv.width,cv.height);
@@ -466,46 +463,24 @@ function draw(res){
 
 /* 시작 버튼: 카메라 권한 요청 → 실패 시 터치 전용 */
 $("start").addEventListener("click",async()=>{
+  try{ const fr=$("frame"); if(fr.requestFullscreen) await fr.requestFullscreen(); }catch(_){}
   $("overlay").style.display="none";
+  $("exitBtn").style.display="block";
   try{ await initHand(); await startCamera(); }
   catch(err){ console.warn("gesture disabled:",err); $("cam").classList.remove("on"); }
 });
-</script>
 
-<!-- ⚙ 실시간 조절 패널 로직 (배포 시 영향 없음) -->
-<script>
-(function(){
-  const root=document.documentElement;
-  // [var, 기본값(cqw)] — 슬라이더 id는 r-header-pt / 값표시 id는 v-header-pt 형태
-  const DEFAULTS={ "--header-pt":2.2, "--logo-h":7.7, "--name-chip-gap":5.0, "--ensub-top":14.0, "--desc-top":18.6, "--spec-top":24.6, "--info-h":30.6 };
-  const KEYS=Object.keys(DEFAULTS);
-  const rId=k=>"r"+k.replace("--","-");
-  const vId=k=>"v"+k.replace("--","-");
-
-  function refreshOut(){
-    const lines=KEYS.map(k=>`    ${k}:${(+document.getElementById(rId(k)).value).toFixed(1)}cqw;`);
-    document.getElementById("ctrlCss").value=lines.join("\n");
-  }
-  function bind(key){
-    const r=document.getElementById(rId(key)), v=document.getElementById(vId(key));
-    const set=val=>{ r.value=val; v.textContent=(+val).toFixed(1)+"cqw"; root.style.setProperty(key, val+"cqw"); refreshOut(); };
-    r.addEventListener("input",()=>set(r.value));
-    set(DEFAULTS[key]);
-  }
-  KEYS.forEach(bind);
-
-  document.getElementById("ctrlToggle").addEventListener("click",()=>{
-    document.getElementById("ctrl").classList.toggle("open");
-  });
-  document.getElementById("ctrlReset").addEventListener("click",()=>{
-    KEYS.forEach(k=>{ const r=document.getElementById(rId(k)); r.value=DEFAULTS[k]; r.dispatchEvent(new Event("input")); });
-  });
-  document.getElementById("ctrlCopy").addEventListener("click",async()=>{
-    const t=document.getElementById("ctrlCss"); t.select();
-    try{ await navigator.clipboard.writeText(t.value); }catch(e){ document.execCommand("copy"); }
-    const b=document.getElementById("ctrlCopy"); const o=b.textContent; b.textContent="복사됨!"; setTimeout(()=>b.textContent=o,1200);
-  });
-})();
+/* 종료하기 → 카메라/전체화면 해제 후 첫(시작) 화면으로 복귀 */
+function exitKiosk(){
+  try{ if(video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;} }catch(_){}
+  $("cam").classList.remove("on");
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  shoe=0;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();
+  $("exitBtn").style.display="none";
+  $("overlay").style.display="flex";
+}
+$("exitBtn").addEventListener("click",exitKiosk);
+document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement && $("exitBtn").style.display==="block") exitKiosk(); });
 </script>
 </body>
 </html>
