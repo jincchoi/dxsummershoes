@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Discovery Expedition — Summer Shoes (Gesture)</title>
+<!--
+  매장 체험형 태블릿 — 손동작 인식 버전 (세로형 / Portrait, 1400 x 2000)  · FINAL v3
+  ─────────────────────────────────────────────────────────────
+  · ✌ 가위 = 이전 상품 / ✊ 주먹 = 다음 상품 · 손 좌우 = 이미지 · 컬러칩 = 컬러 전환
+  · 간격/위치/크기는 아래 :root 의 --변수 로 조정합니다(단위 cqw = 화면폭의 1%).
+  · [v3 변경]
+    1) ⚙ 조절 패널: 로고 높이 / 상단 여백 / 상품명-컬러칩 간격 실시간 조절 (현재값 복사 가능)
+    2) 컬러칩 위치를 '상품명 뒤 일정 간격'(flex)으로 변경 → 상품명 길이와 무관하게 동일 간격
+  [이미지/문구 교체]  PRODUCTS 배열의 colors[].imgs 경로(이 HTML 기준 상대경로)를 교체.
+  [단일 파일 배포]   embed-images.bat 실행 → *_embed.html 생성(이미지 내장).
+-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#F4F1EA; --surface:#FFFFFF; --ink:#1B2630; --muted:#6A7079;
+    --line:rgba(27,38,48,.12); --line-2:rgba(27,38,48,.22);
+    --accent:#1E7FB5; --accent-soft:#DCECF5; --chip:rgba(255,255,255,.9);
+    --font:"Pretendard","Pretendard Variable",-apple-system,"Noto Sans KR","Noto Sans JP","Noto Sans SC",system-ui,sans-serif;
+
+    /* ===== 간격/위치/크기 (단위 cqw = 화면폭의 1%) ===== */
+    --header-pt:2.2cqw;        /* [조절] 상단 여백 */
+    --pad-x:4.5cqw;
+    --logo-h:7.7cqw;           /* [조절] 브랜드 로고 높이 */
+    --lang-size:2.2cqw;
+    --pbar-mb:3cqw;
+    --img-radius:2.5cqw;
+    --counter-size:2.5cqw;
+    --idots-pt:1.6cqw;
+    --info-h:30.6cqw;          /* [조절] 정보영역 높이 */
+    --tags-top:2.8cqw;
+    --badge-size:2.1cqw;
+    --name-top:5.7cqw;
+    --name-size:4.5cqw;
+    --price-size:3.6cqw;
+    --name-chip-gap:5.0cqw;    /* [조절] 상품명 ↔ 컬러칩 간격 (모든 상품 동일) */
+    --chips-gap:2.2cqw;
+    --chip-d:3.5cqw;
+    --ensub-top:14.0cqw;       /* [조절] 영문서브 위치 */
+    --ensub-size:2.3cqw;
+    --desc-top:18.6cqw;        /* [조절] 설명문 위치 */
+    --desc-size:2.6cqw;
+    --spec-top:24.6cqw;        /* [조절] 스펙/구분선 위치 */
+    --spec-size:2.1cqw;
+    --hint-size:2.1cqw;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0;background:#000;overflow:hidden;font-family:var(--font);
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  #frame{height:100dvh;aspect-ratio:1400/2000;max-width:100vw;margin:0 auto;position:relative;
+    background:var(--bg);container-type:inline-size;overflow:hidden}
+  #app{position:absolute;inset:0;display:flex;flex-direction:column}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:var(--header-pt) var(--pad-x) 1cqw;flex:0 0 auto}
+  /* 로고 PNG 좌측 여백(폭의 6.73%) 보정 → 로고 시작점을 이미지 좌측 끝선과 정렬 (로고 높이에 비례) */
+  .brand-logo{height:var(--logo-h);width:auto;display:block;margin-left:calc(var(--logo-h) * -0.2427)}
+  .langs{display:flex;gap:1.2cqw}
+  .lang{font-family:var(--font);font-size:var(--lang-size);color:var(--muted);background:transparent;
+    border:0.12cqw solid var(--line-2);border-radius:3cqw;padding:1.4cqw 2.8cqw;cursor:pointer;line-height:1}
+  .lang.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  #content{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0 var(--pad-x);will-change:transform}
+  .pbar{display:flex;gap:1.5cqw;padding:0 0 var(--pbar-mb);flex:0 0 auto}
+  .seg{flex:1;height:0.85cqw;border-radius:1cqw;background:var(--line-2);border:0;padding:0;cursor:pointer;transition:background .25s}
+  .seg.on{background:var(--accent)}
+
+  .stage{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
+  .viewport{position:relative;height:100%;width:100%;border-radius:var(--img-radius);overflow:hidden;background:#E6E8E6}
+  .track{display:flex;height:100%;will-change:transform}
+  .cell{flex:0 0 auto;height:100%;position:relative;overflow:hidden;background:#E6E8E6}
+  .cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+    -webkit-user-drag:none;user-select:none;pointer-events:none}
+  /* 모델컷: 같은 이미지를 흐리게 확대해 배경을 채우고(bgblur), 원본은 잘림 없이 전체 표시(fg/contain) */
+  .cell img.bgblur{object-fit:cover;filter:blur(1.8cqw) saturate(1.08);transform:scale(1.12);z-index:0}
+  .cell img.fg{object-fit:contain;z-index:1}
+  .phl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1cqw;color:#3A332C}
+  .phl .pn{font-size:5cqw;font-weight:700;opacity:.5;letter-spacing:.1cqw}
+  .phl .pv{font-size:2.8cqw;opacity:.45;text-transform:uppercase;letter-spacing:.4cqw}
+  .ov{position:absolute;z-index:2;pointer-events:none}
+  .counter{top:2.6cqw;right:2.6cqw;background:var(--chip);color:var(--ink);font-size:var(--counter-size);padding:1cqw 2.4cqw;border-radius:6cqw}
+
+  .idots{display:flex;gap:1.4cqw;justify-content:center;padding:var(--idots-pt) 0 0.4cqw;flex:0 0 auto}
+  .idot{width:1.5cqw;height:1.5cqw;border-radius:50%;background:var(--line-2);border:0;padding:0;cursor:pointer}
+  .idot.on{width:5cqw;border-radius:.8cqw;background:var(--accent)}
+
+  /* ===== 정보 영역 : 고정 레이아웃(언어 무관 동일 위치) ===== */
+  .info{flex:0 0 auto;position:relative;height:var(--info-h);padding:1cqw 1cqw 0}
+  .tags{position:absolute;top:var(--tags-top);left:1cqw;display:flex;gap:1.2cqw;align-items:center}
+  .badge{display:inline-flex;align-items:center;justify-content:center;font-size:var(--badge-size);line-height:1;padding:0.8cqw 2cqw 0.64cqw;border-radius:2cqw}
+  .badge.main{background:var(--accent);color:#fff}
+  .badge.sub{background:var(--accent-soft);color:var(--accent)}
+  .pno{display:inline-flex;align-items:center;justify-content:center;font-size:calc(var(--badge-size) - 0.1cqw);line-height:1;padding:0.75cqw 1.8cqw 0.59cqw;border-radius:2cqw;border:0.12cqw solid var(--line-2);color:var(--muted);letter-spacing:.06cqw}
+
+  /* nrow : [상품명 — 컬러칩] 좌측 그룹 + 가격 우측 (상품명-칩 간격 고정) */
+  .nrow{position:absolute;top:var(--name-top);left:1cqw;right:1cqw;height:7cqw;display:flex;align-items:flex-end;justify-content:space-between;gap:2cqw}
+  .nleft{display:flex;align-items:center;gap:var(--name-chip-gap);min-width:0}
+  .name{font-size:var(--name-size);font-weight:700;color:var(--ink);letter-spacing:-.05cqw;white-space:nowrap;line-height:1}
+  .price{font-size:var(--price-size);font-weight:600;color:var(--ink);white-space:nowrap;line-height:1;flex:0 0 auto}
+  .chips{display:flex;gap:var(--chips-gap);align-items:center;flex:0 0 auto}
+  .chip-b{width:var(--chip-d);height:var(--chip-d);border-radius:50%;border:0.2cqw solid var(--line-2);padding:0;cursor:pointer;
+    transition:box-shadow .15s,transform .12s;background-clip:padding-box}
+  .chip-b:active{transform:scale(.9)}
+  .chip-b.on{box-shadow:0 0 0 0.6cqw var(--surface),0 0 0 1.05cqw var(--accent)}
+
+  .ensub{position:absolute;top:var(--ensub-top);left:1cqw;right:1cqw;height:3.6cqw;overflow:hidden;
+    font-size:var(--ensub-size);color:var(--accent);letter-spacing:.02cqw;white-space:nowrap;text-overflow:ellipsis}
+  .desc{position:absolute;top:var(--desc-top);left:1cqw;right:1cqw;height:calc(var(--spec-top) - var(--desc-top) - 0.6cqw);overflow:hidden;
+    font-size:var(--desc-size);line-height:1.45;color:var(--ink)}
+  .spec{position:absolute;top:var(--spec-top);left:1cqw;right:1cqw;padding-top:1.2cqw;border-top:0.12cqw solid var(--line);
+    font-size:var(--spec-size);color:var(--muted)}
+
+  .hint{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:2cqw;color:var(--muted);font-size:var(--hint-size);padding:1cqw 0 1.6cqw;transition:opacity .4s}
+
+  /* 카메라 미리보기 + 손동작 상태 */
+  .cam{position:absolute;left:6cqw;top:18cqw;width:19cqw;aspect-ratio:3/4;border-radius:2.4cqw;overflow:hidden;background:#111;z-index:6;border:0.2cqw solid var(--line-2);display:none}
+  .cam.on{display:block}
+  .cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  .cam canvas{position:absolute;inset:0;width:100%;height:100%}
+  .cam .clbl{position:absolute;top:1cqw;left:1cqw;font-size:1.9cqw;color:#fff;background:rgba(0,0,0,.45);padding:.4cqw 1.4cqw;border-radius:3cqw}
+  .flash{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);z-index:7;font-size:9cqw;color:var(--accent);
+    opacity:0;pointer-events:none;font-weight:700}
+  .flash.go{animation:pop .55s ease}
+  @keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}30%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
+
+  #overlay{position:absolute;inset:0;z-index:20;background:rgba(18,40,56,.94);color:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2cqw;text-align:center;padding:9cqw}
+  #overlay h1{font-size:5cqw;font-weight:700;margin:0}
+  #overlay p{font-size:3cqw;color:#e8e3da;margin:0;line-height:1.6}
+  .ovlangs{display:flex;gap:1.8cqw;flex-wrap:wrap;justify-content:center;margin-bottom:1cqw}
+  .ovlang{font-family:var(--font);font-size:2.9cqw;color:#fff;background:rgba(255,255,255,.12);
+    border:0.2cqw solid rgba(255,255,255,.55);border-radius:6cqw;padding:1.5cqw 4cqw;cursor:pointer;line-height:1}
+  .ovlang.on{background:#fff;color:var(--ink);border-color:#fff}
+  #start{font-family:var(--font);font-size:3.4cqw;font-weight:600;color:#fff;background:var(--accent);
+    border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:1cqw}
+  #exitBtn{position:absolute;top:2.4cqw;right:2.4cqw;z-index:15;display:none;font-family:var(--font);
+    font-size:2.3cqw;font-weight:600;color:#fff;background:rgba(33,31,27,.5);
+    border:0.16cqw solid rgba(255,255,255,.45);border-radius:5cqw;padding:1.5cqw 3.4cqw;cursor:pointer;line-height:1}
+  .ghand{font-size:9cqw;animation:palm 1.4s ease-in-out infinite}
+  @keyframes palm{0%,100%{transform:translateX(-2.6cqw) rotate(-6deg)}50%{transform:translateX(2.6cqw) rotate(6deg)}}
+  @media(prefers-reduced-motion:reduce){.ghand{animation:none}}
+</style>
+</head>
+<body>
+<div id="frame">
+  <div id="app">
+    <header>
+      <img class="brand-logo" src="LOGO_gREY-01.png" alt="Discovery Expedition">
+      <div class="langs" id="langs"></div>
+    </header>
+    <div id="content">
+      <div class="pbar" id="pbar"></div>
+      <div class="stage" id="stage">
+        <div class="viewport" id="ivp">
+          <div class="track" id="track"></div>
+          <div class="ov counter" id="counter"></div>
+        </div>
+        <div class="flash" id="flash"></div>
+      </div>
+      <div class="idots" id="idots"></div>
+      <div class="info" id="info"></div>
+    </div>
+    <div class="hint" id="hint"></div>
+    <div class="cam" id="cam"><video id="video" playsinline muted></video><canvas id="cv"></canvas><div class="clbl" id="clbl">손 인식</div></div>
+  </div>
+  <div id="overlay">
+    <div class="ovlangs" id="ovLangs"></div>
+    <div class="ghand">&#128400;</div>
+    <h1 id="ovTitle"></h1>
+    <p id="ovGuide"></p>
+    <button id="start"></button>
+  </div>
+  <button id="exitBtn"></button>
+</div>
+
+<script type="module">
+import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
+
+/* ===== 손동작 민감도 설정 ===== */
+const CONFIG={ POSE_FRAMES:6, PALM_FRAMES:4, COOLDOWN_MS:1200, IMG_COOLDOWN_MS:700, ZONE:0.62 };
+
+/* ===== 다국어 라벨 ===== */
+const T={
+  kr:{lang:"한국어",hint:"🖐 손바닥 좌·우 = 이미지 · ✌ 이전 상품 · ✊ 다음 상품"},
+  en:{lang:"EN",hint:"🖐 palm left/right = image · ✌ prev · ✊ next"},
+  cn:{lang:"中文",hint:"🖐 手掌左右 = 图片 · ✌ 上一款 · ✊ 下一款"},
+  jp:{lang:"日本語",hint:"🖐 手のひら左右 = 画像 · ✌ 前の商品 · ✊ 次の商品"}
+};
+const F={best:{kr:"베스트",en:"Best",cn:"热卖",jp:"ベスト"},new:{kr:"26SS 신상품",en:"26SS New",cn:"26SS 新品",jp:"26SS NEW"}};
+const VIEW={model:{kr:"모델컷",en:"Model",cn:"模特",jp:"モデル"},product:{kr:"제품컷",en:"Product",cn:"产品",jp:"製品"}};
+const SPEC={wt:{kr:"무게",en:"Weight",cn:"重量",jp:"重さ"},hl:{kr:"굽 높이",en:"Heel",cn:"跟高",jp:"ヒール高"}};
+/* ===== 시작 화면 안내 (언어별) ===== */
+const INTRO={
+  kr:{title:"손동작으로 둘러보세요",guide:"🖐 손바닥 : 화면 좌·우로 옮겨 이미지 넘기기<br>✌ 브이 : 이전 상품 &nbsp;·&nbsp; ✊ 주먹 : 다음 상품<br>(화면 드래그·컬러칩으로도 이용 가능)",start:"시작하기",exit:"종료하기"},
+  en:{title:"Browse with gestures",guide:"🖐 Palm : move left/right to flip images<br>✌ V sign : previous product &nbsp;·&nbsp; ✊ Fist : next product<br>(You can also drag or tap a color chip)",start:"Start",exit:"Exit"},
+  cn:{title:"用手势浏览",guide:"🖐 手掌 : 左右移动切换图片<br>✌ V手势 : 上一款 &nbsp;·&nbsp; ✊ 拳头 : 下一款<br>(也可拖动屏幕或点击颜色)",start:"开始",exit:"退出"},
+  jp:{title:"ジェスチャーで操作",guide:"🖐 手のひら : 左右に動かして画像切替<br>✌ ピース : 前の商品 &nbsp;·&nbsp; ✊ グー : 次の商品<br>(ドラッグ・カラーチップも可)",start:"スタート",exit:"終了"}
+};
+
+/* 이미지 묶음 헬퍼 — 모델컷 → 제품컷 순서로 결합 */
+const mk=(model,product)=>[
+  ...model.map(src=>({view:"model",src})),
+  ...product.map(src=>({view:"product",src}))
+];
+
+/* ===== 콘텐츠 — 폴더 순서(웨이브제인 → 웨이브샌디) ===== */
+const PRODUCTS=[
+  {nameKr:"웨이브 제인",nameEn:"Wave Jane",code:"DXSH7275N",flag:"best",price:"₩99,000",weight:"234g",heel:"3.5cm",
+   tag:{kr:"베스트 액티브 메리제인",en:"Best active Mary Jane",cn:"人气 active 玛丽珍",jp:"人気アクティブメリージェーン"},
+   desc:{kr:"곡선적 형태감이 돋보이는 디스커버리 베스트 액티브 메리제인 스니커즈",en:"Discovery's best-selling active Mary Jane sneaker with a sculpted silhouette",cn:"曲线轮廓出众的 Discovery 人气运动玛丽珍运动鞋",jp:"曲線的なシルエットが際立つ、ディスカバリー人気のアクティブメリージェーンスニーカー"},
+   colors:[
+     {code:"BDS",name:{kr:"버건디",en:"Burgundy"},chip:"#6B3A44",imgs:mk(
+       ["1) 웨이브제인/01)BDS/01) 모델컷.jpg","1) 웨이브제인/01)BDS/02) 모델컷.jpg"],
+       ["1) 웨이브제인/01)BDS/03) 제품컷.png","1) 웨이브제인/01)BDS/04) 제품컷.jpg","1) 웨이브제인/01)BDS/05) 제품컷.jpg","1) 웨이브제인/01)BDS/06) 제품컷.jpg"])},
+     {code:"RDS",name:{kr:"레드",en:"Red"},chip:"#C0202B",imgs:mk(
+       [],
+       ["1) 웨이브제인/02)RDS/DXSH7275N-RDS_02_MS.png","1) 웨이브제인/02)RDS/DXSH7275N-RDS_12_S.jpg","1) 웨이브제인/02)RDS/DXSH7275N-RDS_13_S.jpg","1) 웨이브제인/02)RDS/DXSH7275N-RDS_15_S.jpg"])},
+     {code:"BLL",name:{kr:"라이트블루",en:"Light Blue"},chip:"#C9D5E6",imgs:mk(
+       ["1) 웨이브제인/03)BLL/01) 모델컷.jpg","1) 웨이브제인/03)BLL/02) 모델컷.jpg"],
+       ["1) 웨이브제인/03)BLL/DXSH7275N-BLL_02_S.png","1) 웨이브제인/03)BLL/DXSH7275N-BLL_12_S.jpg","1) 웨이브제인/03)BLL/DXSH7275N-BLL_13_S.jpg","1) 웨이브제인/03)BLL/DXSH7275N-BLL_15_S.jpg"])},
+     {code:"VOL",name:{kr:"라벤더",en:"Lavender"},chip:"#CDBFD6",imgs:mk(
+       [],
+       ["1) 웨이브제인/04)VOL/DXSH7275N-VOL_01_MS.png","1) 웨이브제인/04)VOL/DXSH7275N-VOL_12_S.jpg","1) 웨이브제인/04)VOL/DXSH7275N-VOL_13_S.jpg","1) 웨이브제인/04)VOL/DXSH7275N-VOL_15_S.jpg"])},
+     {code:"GRL",name:{kr:"그레이",en:"Gray"},chip:"#CBCCC9",imgs:mk(
+       ["1) 웨이브제인/05)GRL/01) 모델컷.jpg","1) 웨이브제인/05)GRL/02) 모델컷.jpg"],
+       ["1) 웨이브제인/05)GRL/DXSH7275N-GRL_01_MS.png","1) 웨이브제인/05)GRL/DXSH7275N-GRL_12_S.jpg","1) 웨이브제인/05)GRL/DXSH7275N-GRL_13_S.jpg","1) 웨이브제인/05)GRL/DXSH7275N-GRL_15_S.jpg"])},
+     {code:"BKD",name:{kr:"블랙",en:"Black"},chip:"#1E1E1E",imgs:mk(
+       ["1) 웨이브제인/06)BKD/01) 모델컷.jpg","1) 웨이브제인/06)BKD/02) 모델컷.jpg"],
+       ["1) 웨이브제인/06)BKD/DXSH7275N-BKD_01_MS.png","1) 웨이브제인/06)BKD/DXSH7275N-BKD_12_S.jpg","1) 웨이브제인/06)BKD/DXSH7275N-BKD_13_S.jpg","1) 웨이브제인/06)BKD/DXSH7275N-BKD_15_S.jpg"])}
+   ]},
+
+  {nameKr:"웨이브 스트랩",nameEn:"Wave Strap",code:"DXSH7336N",flag:"new",price:"₩119,000",weight:"214g",heel:"3cm",
+   tag:{kr:"슬림 핏 데일리 메리제인",en:"Slim-fit daily Mary Jane",cn:"纤细日常玛丽珍",jp:"スリムフィット デイリーメリージェーン"},
+   desc:{kr:"가벼운 슬림 핏으로 감각적인 데일리 룩을 완성하는 메리제인 스니커즈",en:"A slim and lightweight Mary Jane sneaker for a chic everyday look",cn:"轻盈修身，打造时尚日常风格的玛丽珍运动鞋",jp:"軽くスリムなフィットで、洗練されたデイリースタイルを演出するメリージェーンスニーカー"},
+   colors:[
+     {code:"BGL",name:{kr:"아이보리",en:"Ivory"},chip:"#EAE3D6",imgs:mk(
+       ["2) 웨이브스트랩/01) BGL/01) 모델컷.jpg","2) 웨이브스트랩/01) BGL/02) 모델컷.jpg"],
+       ["2) 웨이브스트랩/01) BGL/DXSH7336N-BGL_01_MS.jpg","2) 웨이브스트랩/01) BGL/DXSH7336N-BGL_12_S.jpg","2) 웨이브스트랩/01) BGL/DXSH7336N-BGL_13_S.jpg","2) 웨이브스트랩/01) BGL/DXSH7336N-BGL_15_S.jpg"])},
+     {code:"BKS",name:{kr:"블랙",en:"Black"},chip:"#2E3034",imgs:mk(
+       ["2) 웨이브스트랩/02) BKS/01) 모델컷.jpg","2) 웨이브스트랩/02) BKS/02) 모델컷.jpg"],
+       ["2) 웨이브스트랩/02) BKS/DXSH7336N-BKS_01_MS.jpg","2) 웨이브스트랩/02) BKS/DXSH7336N-BKS_12_S.jpg","2) 웨이브스트랩/02) BKS/DXSH7336N-BKS_13_S.jpg","2) 웨이브스트랩/02) BKS/DXSH7336N-BKS_15_S.jpg"])},
+     {code:"BRD",name:{kr:"브라운",en:"Brown"},chip:"#4A3A31",imgs:mk(
+       [],
+       ["2) 웨이브스트랩/03) BRD/DXSH7336N-BRD_01_MS.jpg","2) 웨이브스트랩/03) BRD/DXSH7336N-BRD_12_S.jpg","2) 웨이브스트랩/03) BRD/DXSH7336N-BRD_13_S.jpg","2) 웨이브스트랩/03) BRD/DXSH7336N-BRD_15_S.jpg"])},
+     {code:"GRL",name:{kr:"그레이",en:"Gray"},chip:"#D4D6D6",imgs:mk(
+       [],
+       ["2) 웨이브스트랩/04) GRL/DXSH7336N-GRL_01_MS.jpg","2) 웨이브스트랩/04) GRL/DXSH7336N-GRL_12_S.jpg","2) 웨이브스트랩/04) GRL/DXSH7336N-GRL_13_S.jpg","2) 웨이브스트랩/04) GRL/DXSH7336N-GRL_15_S.jpg"])}
+   ]},
+
+  {nameKr:"제인 라이트",nameEn:"Jane Lite",code:"DXSH5336N",flag:"new",price:"₩119,000",weight:"225g",heel:"3cm",
+   tag:{kr:"로우 프로파일 메리제인",en:"Low-profile Mary Jane",cn:"低帮玛丽珍",jp:"ロープロファイル メリージェーン"},
+   desc:{kr:"발등을 덮는 안정적인 착화감과 메리제인 실루엣에서 영감 받은 로우 프로파일 스니커즈",en:"A low-profile sneaker inspired by the Mary Jane silhouette",cn:"灵感源自玛丽珍轮廓的低轮廓运动鞋",jp:"メリージェーンシルエットから着想したロープロファイルスニーカー"},
+   colors:[
+     {code:"WHS",name:{kr:"화이트",en:"White"},chip:"#F1ECE2",imgs:mk(
+       ["3) 제인라이트/01)WHS/01_모델컷.jpg"],
+       ["3) 제인라이트/01)WHS/DXSH5336_WHS_01_MS.png","3) 제인라이트/01)WHS/DXSH5336_WHS_12_S.jpg","3) 제인라이트/01)WHS/DXSH5336_WHS_13_S.jpg","3) 제인라이트/01)WHS/DXSH5336_WHS_15_S.jpg"])},
+     {code:"BLL",name:{kr:"라이트블루",en:"Light Blue"},chip:"#DCE5EE",imgs:mk(
+       [],
+       ["3) 제인라이트/02)BLL/DXSH5336N-BLL_01_MS.png","3) 제인라이트/02)BLL/DXSH5336N-BLL_12_S.jpg","3) 제인라이트/02)BLL/DXSH5336N-BLL_13_S.jpg","3) 제인라이트/02)BLL/DXSH5336N-BLL_15_S.jpg"])},
+     {code:"BKS",name:{kr:"블랙",en:"Black"},chip:"#1C1C1C",imgs:mk(
+       [],
+       ["3) 제인라이트/03)BKS/DXSH5336N-BKS_01_MS.png","3) 제인라이트/03)BKS/DXSH5336N-BKS_12_S.jpg","3) 제인라이트/03)BKS/DXSH5336N-BKS_13_S.jpg","3) 제인라이트/03)BKS/DXSH5336N-BKS_15_S.jpg"])}
+   ]},
+
+  {nameKr:"웨이브 샌디",nameEn:"Wave Sandy",code:"DXSH7244N",flag:"new",price:"₩109,000",weight:"231g",heel:"3.5cm",
+   tag:{kr:"아웃도어 스니커즈 샌들",en:"Outdoor sneaker-sandal",cn:"户外运动凉鞋",jp:"アウトドアスニーカーサンダル"},
+   desc:{kr:"곡선적인 형태감이 돋보이는 아웃도어 스니커즈 샌들",en:"An outdoor sneaker-sandal with a sculpted silhouette",cn:"曲线轮廓出众的户外运动凉鞋",jp:"曲線的なシルエットが際立つアウトドアスニーカーサンダル"},
+   colors:[
+     {code:"BES",name:{kr:"베이지",en:"Beige"},chip:"#E3D8C3",imgs:mk(
+       ["4) 웨이브샌디/01) BES/01) 모델컷.jpg","4) 웨이브샌디/01) BES/02) 모델컷.jpg"],
+       ["4) 웨이브샌디/01) BES/DXSH7244N-BES_01_MS.jpg","4) 웨이브샌디/01) BES/DXSH7244N-BES_12_S.jpg","4) 웨이브샌디/01) BES/DXSH7244N-BES_13_S.jpg","4) 웨이브샌디/01) BES/DXSH7244N-BES_15_S.jpg"])},
+     {code:"WHS",name:{kr:"화이트",en:"White"},chip:"#F1F0EC",imgs:mk(
+       ["4) 웨이브샌디/02) WHS/01) 모델컷.jpg","4) 웨이브샌디/02) WHS/02) 모델컷.jpg"],
+       ["4) 웨이브샌디/02) WHS/DXSH7244N-WHS_01_MS.jpg","4) 웨이브샌디/02) WHS/DXSH7244N-WHS_12_S.jpg","4) 웨이브샌디/02) WHS/DXSH7244N-WHS_13_S.jpg","4) 웨이브샌디/02) WHS/DXSH7244N-WHS_15_S.jpg"])},
+     {code:"BKS",name:{kr:"블랙",en:"Black"},chip:"#1E1E1E",imgs:mk(
+       [],
+       ["4) 웨이브샌디/03) BKS/DXSH7244N-BKS_01_MS.jpg","4) 웨이브샌디/03) BKS/DXSH7244N-BKS_12_S.jpg","4) 웨이브샌디/03) BKS/DXSH7244N-BKS_13_S.jpg","4) 웨이브샌디/03) BKS/DXSH7244N-BKS_15_S.jpg"])},
+     {code:"SIL",name:{kr:"실버",en:"Silver"},chip:"#CBCED0",imgs:mk(
+       [],
+       ["4) 웨이브샌디/04) SIL/DXSH7244N-SIL_01_MS.jpg","4) 웨이브샌디/04) SIL/DXSH7244N-SIL_12_S.jpg","4) 웨이브샌디/04) SIL/DXSH7244N-SIL_13_S.jpg","4) 웨이브샌디/04) SIL/DXSH7244N-SIL_15_S.jpg"])},
+     {code:"ZBS",name:{kr:"블랙화이트",en:"Black & White"},chip:"linear-gradient(135deg,#1c1c1c 0 50%,#f0efea 50% 100%)",imgs:mk(
+       [],
+       ["4) 웨이브샌디/05) ZBS/DXSH7244N-ZBS_08_MS.jpg","4) 웨이브샌디/05) ZBS/DXSH7244N-ZBS_12_S.jpg","4) 웨이브샌디/05) ZBS/DXSH7244N-ZBS_13_S.jpg","4) 웨이브샌디/05) ZBS/DXSH7244N-ZBS_15_S.jpg"])}
+   ]}
+];
+
+/* ===== 갤러리 ===== */
+let shoe=0,colorIdx=0,img=0,lang="kr",axis=null,drag=false,x0=0,y0=0,dx=0,dy=0,IW=0;
+const $=id=>document.getElementById(id);
+const stage=$("stage"),ivp=$("ivp"),track=$("track"),content=$("content");
+const curColor=()=>PRODUCTS[shoe].colors[colorIdx];
+
+function renderLangs(){$("langs").innerHTML=["kr","en","cn","jp"].map(l=>`<button class="lang ${l===lang?"on":""}" onclick="setLang('${l}')">${T[l].lang}</button>`).join("");}
+function buildTrack(){const p=PRODUCTS[shoe],c=curColor();
+  track.innerHTML=c.imgs.map(im=>{const src=encodeURI(im.src);
+    const alt=`${p.nameEn} ${c.code} ${VIEW[im.view][lang]}`;
+    const phl=`<div class="phl"><span class="pn">${p.nameEn}</span><span class="pv">${VIEW[im.view][lang]}</span></div>`;
+    // 모델컷·제품컷 모두 4:5 비율 적용 완료 → 별도 가공 없이 그대로 cover
+    // PNG(투명 배경 가능)는 셀에 화이트 배경을 깔고, 투명영역으로 비치는 플레이스홀더 텍스트는 숨김
+    const isPng=/\.png(\?|$)/i.test(im.src);
+    const cellBg=isPng?' style="background:#fff"':'';
+    return `<div class="cell"${cellBg}>${isPng?'':phl}<img src="${src}" alt="${alt}" onerror="this.remove()"></div>`;}).join("");
+  size();updateOv();}
+function updateOv(){const c=curColor();$("counter").textContent=(img+1)+" / "+c.imgs.length;}
+function renderInfo(){const p=PRODUCTS[shoe],fb=F[p.flag][lang],c=curColor();
+  const nm=lang==="kr"?p.nameKr:p.nameEn;
+  const chips=p.colors.map((co,k)=>`<button class="chip-b ${k===colorIdx?"on":""}" style="background:${co.chip}" onclick="setColor(${k})" aria-label="${co.name.en}"></button>`).join("");
+  $("info").innerHTML=
+    `<div class="tags"><span class="badge ${p.flag==="best"?"main":"sub"}">${fb}</span><span class="pno">${p.code}</span></div>`+
+    `<div class="nrow"><div class="nleft"><span class="name">${nm}</span><span class="chips">${chips}</span></div><span class="price">${p.price}</span></div>`+
+    `<div class="ensub">${p.nameEn.toUpperCase()} · ${p.tag[lang]}</div>`+
+    `<div class="desc">${p.desc[lang]}</div>`+
+    `<div class="spec">${SPEC.wt[lang]} ${p.weight} · ${SPEC.hl[lang]} ${p.heel}</div>`;}
+function renderIdots(){const c=curColor();$("idots").innerHTML=c.imgs.map((im,k)=>`<button class="idot ${k===img?"on":""}" onclick="imgDot(${k})" aria-label="${k+1}"></button>`).join("");}
+function renderPbar(){$("pbar").innerHTML=PRODUCTS.map((p,i)=>`<button class="seg ${i===shoe?"on":""}" onclick="shoeJump(${i})" aria-label="${p.nameEn}"></button>`).join("");}
+function renderHint(){$("hint").innerHTML=`<span>${T[lang].hint}</span>`;}
+function size(){IW=ivp.clientWidth;[...track.children].forEach(c=>c.style.width=IW+"px");place(false);}
+function place(a){
+  track.style.transition=a?"transform .38s cubic-bezier(.22,.61,.36,1)":"none";
+  let off=axis==="x"?dx:0;
+  const len=curColor().imgs.length;            // 양끝에서 고무줄 저항
+  if((img===0&&off>0)||(img===len-1&&off<0))off*=0.35;
+  track.style.transform=`translateX(${-img*IW+off}px)`;
+}
+function dim(){$("hint").style.opacity=".4";}
+function setImg(n){const len=curColor().imgs.length;img=Math.max(0,Math.min(len-1,n));place(true);renderIdots();updateOv();dim();resetIdle();}
+/* 이미지 이동 — 끝까지 가면 다음/이전 상품으로 자동 전환 */
+function navImage(dir){
+  const len=curColor().imgs.length, n=img+dir;
+  if(n>=0&&n<len){setImg(n);return;}
+  if(dir>0){                                     // 마지막 이미지 다음 → 다음 상품 첫 이미지
+    if(shoe<PRODUCTS.length-1)shoeStep(1); else setImg(len-1);
+  }else{                                          // 첫 이미지 이전 → 이전 상품 마지막 이미지
+    if(shoe>0){shoeStep(-1);img=curColor().imgs.length-1;renderIdots();updateOv();place(true);dim();resetIdle();}
+    else setImg(0);
+  }
+}
+function setColor(k){const p=PRODUCTS[shoe];k=Math.max(0,Math.min(p.colors.length-1,k));if(k===colorIdx)return;
+  colorIdx=k;img=0;renderInfo();buildTrack();renderIdots();dim();resetIdle();}
+function shoeStep(d){const ns=Math.max(0,Math.min(PRODUCTS.length-1,shoe+d));const dir=Math.sign(d)||1;
+  if(ns===shoe){content.style.transition="transform .25s ease";content.style.transform="translateY(0)";content.style.opacity="1";return;}
+  shoe=ns;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();dim();resetIdle();
+  content.style.transition="none";content.style.transform=`translateY(${dir*4}cqw)`;content.style.opacity=".4";
+  requestAnimationFrame(()=>{content.style.transition="transform .3s ease, opacity .3s ease";content.style.transform="translateY(0)";content.style.opacity="1";});}
+function renderOverlay(){const t=INTRO[lang];
+  $("ovLangs").innerHTML=["kr","en","cn","jp"].map(l=>`<button class="ovlang ${l===lang?"on":""}" onclick="setLang('${l}')">${T[l].lang}</button>`).join("");
+  $("ovTitle").textContent=t.title;$("ovGuide").innerHTML=t.guide;$("start").textContent=t.start;$("exitBtn").textContent=t.exit;}
+window.setLang=l=>{lang=l;renderLangs();renderHint();buildTrack();renderInfo();renderIdots();renderOverlay();resetIdle();};
+window.setColor=k=>setColor(k);
+window.shoeBtn=d=>shoeStep(d);
+window.shoeJump=i=>shoeStep(i-shoe);
+window.imgDot=k=>setImg(k);
+
+/* 터치 스와이프 = 이미지(좌우)만 */
+let vx=0,lastX=0,lastT=0;
+stage.addEventListener("dragstart",e=>e.preventDefault());
+stage.addEventListener("pointerdown",e=>{
+  drag=true;axis=null;x0=e.clientX;y0=e.clientY;dx=0;dy=0;
+  vx=0;lastX=e.clientX;lastT=e.timeStamp;
+  track.style.transition="none";stage.style.cursor="grabbing";
+  try{stage.setPointerCapture(e.pointerId);}catch(_){}
+});
+stage.addEventListener("pointermove",e=>{if(!drag)return;
+  dx=e.clientX-x0;dy=e.clientY-y0;
+  if(!axis&&(Math.abs(dx)>6||Math.abs(dy)>6))axis=Math.abs(dx)>=Math.abs(dy)?"x":"y";
+  if(axis==="x"){
+    e.preventDefault();
+    const now=e.timeStamp,dt=now-lastT;
+    if(dt>0){vx=(e.clientX-lastX)/dt;lastX=e.clientX;lastT=now;}  // px/ms
+    place(false);
+  }
+});
+function endPtr(e){if(!drag)return;drag=false;stage.style.cursor="grab";
+  try{if(e&&e.pointerId!=null)stage.releasePointerCapture(e.pointerId);}catch(_){}
+  const wasX=axis==="x";let dir=0;
+  if(wasX){const dist=IW*0.18,flick=0.5;        // 거리 18% 또는 플릭 속도로 넘김
+    if(dx<-dist||vx<-flick)dir=1;else if(dx>dist||vx>flick)dir=-1;}
+  dx=0;dy=0;axis=null;
+  if(wasX&&dir)navImage(dir);                    // 상품 경계 넘으면 다음/이전 상품으로
+  else if(wasX){place(true);resetIdle();}        // 임계 미달 → 제자리 복귀
+  else resetIdle();
+}
+stage.addEventListener("pointerup",endPtr);stage.addEventListener("pointercancel",endPtr);
+window.addEventListener("resize",size);
+document.addEventListener("contextmenu",e=>e.preventDefault());
+
+/* 무조작 45초 → 처음으로 */
+let idleT=null;
+function resetIdle(){clearTimeout(idleT);idleT=setTimeout(()=>{shoe=0;colorIdx=0;img=0;lang="kr";renderLangs();renderHint();renderInfo();buildTrack();renderIdots();renderPbar();$("hint").style.opacity="1";},45000);}
+
+/* 손동작으로 동작 실행 */
+function flash(txt){const f=$("flash");f.textContent=txt;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");}
+function gestureImage(dir){navImage(dir);flash(dir>0?"›":"‹");}
+function gestureProduct(dir){shoeStep(dir);flash(dir>0?"✊":"✌");}
+
+/* 초기 렌더 */
+renderLangs();renderHint();renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();resetIdle();
+
+/* ===== MediaPipe 손 추적 ===== */
+const video=$("video"),cv=$("cv"),ctx=cv.getContext("2d");
+let landmarker=null, hist=[], cooldownUntil=0;
+
+async function initHand(){
+  const vision=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm");
+  landmarker=await HandLandmarker.createFromOptions(vision,{
+    baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",delegate:"GPU"},
+    runningMode:"VIDEO",numHands:1});
+}
+async function startCamera(){
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:480,height:640}});
+  video.srcObject=stream; await video.play();
+  $("cam").classList.add("on");
+  cv.width=video.videoWidth||480; cv.height=video.videoHeight||640;
+  requestAnimationFrame(loop);
+}
+function loop(){
+  if(landmarker&&video.readyState>=2){
+    const res=landmarker.detectForVideo(video,performance.now());
+    handle(res);
+    draw(res);
+  }
+  requestAnimationFrame(loop);
+}
+function fingersUp(lm){const ext=i=>lm[i].y<lm[i-2].y;return [ext(8),ext(12),ext(16),ext(20)];}
+function classify(lm){const f=fingersUp(lm);const up=f.filter(Boolean).length;
+  if(up===0)return "fist";
+  if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";
+  if(up>=3)return "palm";
+  return null;}
+let poseHold=null,poseCount=0,palmZone=0,palmCount=0;
+function handle(res){
+  const now=performance.now();
+  if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;palmZone=0;palmCount=0;$("clbl").textContent="손을 보여주세요";return;}
+  const lm=res.landmarks[0];
+  const g=classify(lm);
+  $("clbl").textContent = g==="fist"?"✊ 다음 상품":g==="scissors"?"✌ 이전 상품":g==="palm"?"🖐 좌·우 = 이미지":"손을 보여주세요";
+  if(now<cooldownUntil)return;
+  if(g==="fist"||g==="scissors"){               // ✊ 다음 상품 / ✌ 이전 상품
+    palmZone=0;palmCount=0;
+    if(g===poseHold)poseCount++; else {poseHold=g;poseCount=1;}
+    if(poseCount>=CONFIG.POSE_FRAMES){gestureProduct(g==="fist"?1:-1);cooldownUntil=now+CONFIG.COOLDOWN_MS;poseHold=null;poseCount=0;}
+  } else if(g==="palm"){                          // 🖐 손바닥 위치(카메라 좌/우)로 이미지 넘김
+    poseHold=null;poseCount=0;
+    const sx=1-lm[9].x;                           // 화면(미러) 기준 가로 위치 0~1
+    const zone = sx>CONFIG.ZONE?1 : sx<(1-CONFIG.ZONE)?-1 : 0;   // 우측=다음, 좌측=이전, 중앙=대기
+    if(zone!==0){
+      palmCount=(zone===palmZone)?palmCount+1:1; palmZone=zone;
+      if(palmCount>=CONFIG.PALM_FRAMES){gestureImage(zone>0?1:-1);cooldownUntil=now+CONFIG.IMG_COOLDOWN_MS;palmCount=0;}
+    } else {palmZone=0;palmCount=0;}
+  } else {poseHold=null;poseCount=0;palmZone=0;palmCount=0;}
+}
+function draw(res){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  if(!res||!res.landmarks||!res.landmarks.length)return;
+  const lm=res.landmarks[0][9];
+  ctx.beginPath();ctx.arc((1-lm.x)*cv.width,lm.y*cv.height,Math.max(6,cv.width*0.03),0,7);
+  ctx.fillStyle="rgba(30,127,181,.9)";ctx.fill();
+}
+
+/* 시작 버튼: 카메라 권한 요청 → 실패 시 터치 전용 */
+$("start").addEventListener("click",async()=>{
+  try{ const fr=$("frame"); if(fr.requestFullscreen) await fr.requestFullscreen(); }catch(_){}
+  $("overlay").style.display="none";
+  $("exitBtn").style.display="block";
+  try{ await initHand(); await startCamera(); }
+  catch(err){ console.warn("gesture disabled:",err); $("cam").classList.remove("on"); }
+});
+
+/* 종료하기 → 카메라/전체화면 해제 후 첫(시작) 화면으로 복귀 */
+function exitKiosk(){
+  try{ if(video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;} }catch(_){}
+  $("cam").classList.remove("on");
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  shoe=0;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();
+  $("exitBtn").style.display="none";
+  $("overlay").style.display="flex";
+}
+$("exitBtn").addEventListener("click",exitKiosk);
+document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement && $("exitBtn").style.display==="block") exitKiosk(); });
+</script>
+</body>
+</html>
