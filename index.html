@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -26,128 +27,132 @@
     --accent:#1E7FB5; --accent-soft:#DCECF5; --chip:rgba(255,255,255,.9);
     --font:"Pretendard","Pretendard Variable",-apple-system,"Noto Sans KR","Noto Sans JP","Noto Sans SC",system-ui,sans-serif;
 
-    /* ===== 간격/위치/크기 (단위 cqw = 화면폭의 1%) ===== */
-    --header-pt:2.2cqw;        /* [조절] 상단 여백 */
-    --pad-x:4.5cqw;
-    --logo-h:7.7cqw;           /* [조절] 브랜드 로고 높이 */
-    --lang-size:2.2cqw;
-    --pbar-mb:3cqw;
-    --img-radius:2.5cqw;
-    --counter-size:2.5cqw;
-    --idots-pt:1.6cqw;
-    --info-h:30.6cqw;          /* [조절] 정보영역 높이 */
-    --tags-top:2.8cqw;
-    --badge-size:2.1cqw;
-    --name-top:5.7cqw;
-    --name-size:4.5cqw;
-    --price-size:3.6cqw;
-    --name-chip-gap:5.0cqw;    /* [조절] 상품명 ↔ 컬러칩 간격 (모든 상품 동일) */
-    --chips-gap:2.2cqw;
-    --chip-d:3.5cqw;
-    --ensub-top:14.0cqw;       /* [조절] 영문서브 위치 */
-    --ensub-size:2.3cqw;
-    --desc-top:18.6cqw;        /* [조절] 설명문 위치 */
-    --desc-size:2.6cqw;
-    --spec-top:24.6cqw;        /* [조절] 스펙/구분선 위치 */
-    --spec-size:2.1cqw;
-    --hint-size:2.1cqw;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;margin:0;background:#000;overflow:hidden;font-family:var(--font);
-    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-  #frame{height:100dvh;aspect-ratio:1400/2000;max-width:100vw;margin:0 auto;position:relative;
-    background:var(--bg);container-type:inline-size;overflow:hidden}
-  #app{position:absolute;inset:0;display:flex;flex-direction:column}
+```
+/* ===== 간격/위치/크기 (단위 cqw = 화면폭의 1%) ===== */
+--header-pt:2.2cqw;        /* [조절] 상단 여백 */
+--pad-x:4.5cqw;
+--logo-h:7.7cqw;           /* [조절] 브랜드 로고 높이 */
+--lang-size:2.2cqw;
+--pbar-mb:3cqw;
+--img-radius:2.5cqw;
+--counter-size:2.5cqw;
+--idots-pt:1.6cqw;
+--info-h:30.6cqw;          /* [조절] 정보영역 높이 */
+--tags-top:2.8cqw;
+--badge-size:2.1cqw;
+--name-top:5.7cqw;
+--name-size:4.5cqw;
+--price-size:3.6cqw;
+--name-chip-gap:5.0cqw;    /* [조절] 상품명 ↔ 컬러칩 간격 (모든 상품 동일) */
+--chips-gap:2.2cqw;
+--chip-d:3.5cqw;
+--ensub-top:14.0cqw;       /* [조절] 영문서브 위치 */
+--ensub-size:2.3cqw;
+--desc-top:18.6cqw;        /* [조절] 설명문 위치 */
+--desc-size:2.6cqw;
+--spec-top:24.6cqw;        /* [조절] 스펙/구분선 위치 */
+--spec-size:2.1cqw;
+--hint-size:2.1cqw;
+```
 
-  header{display:flex;align-items:center;gap:2cqw;padding:var(--header-pt) var(--pad-x) 1cqw;flex:0 0 auto}
-  /* 로고 PNG 좌측 여백(폭의 6.73%) 보정 → 로고 시작점을 이미지 좌측 끝선과 정렬 (로고 높이에 비례) */
-  .brand-logo{height:var(--logo-h);width:auto;display:block;margin-left:calc(var(--logo-h) * -0.2427)}
-  .langs{display:flex;gap:1.2cqw}
-  .lang{font-family:var(--font);font-size:var(--lang-size);color:var(--muted);background:transparent;
-    border:0.12cqw solid var(--line-2);border-radius:3cqw;padding:1.4cqw 2.8cqw;cursor:pointer;line-height:1}
-  .lang.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-  /* 종료(END) 버튼 — 헤더 우측 끝(언어 버튼을 좌측으로 밀어냄) */
-  #exitBtn{margin-left:auto;display:none;font-family:var(--font);font-size:var(--lang-size);font-weight:700;
-    color:#fff;background:var(--accent);border:0.12cqw solid var(--accent);border-radius:3cqw;
-    padding:1.4cqw 3.4cqw;cursor:pointer;line-height:1;letter-spacing:.1cqw}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:#000;overflow:hidden;font-family:var(–font);
+-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#frame{height:100dvh;aspect-ratio:1400/2000;max-width:100vw;margin:0 auto;position:relative;
+background:var(–bg);container-type:inline-size;overflow:hidden}
+#app{position:absolute;inset:0;display:flex;flex-direction:column}
 
-  #content{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0 var(--pad-x);will-change:transform}
-  .pbar{display:flex;gap:1.5cqw;padding:0 0 var(--pbar-mb);flex:0 0 auto}
-  .seg{flex:1;height:0.85cqw;border-radius:1cqw;background:var(--line-2);border:0;padding:0;cursor:pointer;transition:background .25s}
-  .seg.on{background:var(--accent)}
+header{display:flex;align-items:center;gap:2cqw;padding:var(–header-pt) var(–pad-x) 1cqw;flex:0 0 auto}
+/* 로고 PNG 좌측 여백(폭의 6.73%) 보정 → 로고 시작점을 이미지 좌측 끝선과 정렬 (로고 높이에 비례) */
+.brand-logo{height:var(–logo-h);width:auto;display:block;margin-left:calc(var(–logo-h) * -0.2427)}
+.langs{display:flex;gap:1.2cqw}
+.lang{font-family:var(–font);font-size:var(–lang-size);color:var(–muted);background:transparent;
+border:0.12cqw solid var(–line-2);border-radius:3cqw;padding:1.4cqw 2.8cqw;cursor:pointer;line-height:1}
+.lang.on{background:var(–accent);color:#fff;border-color:var(–accent)}
+/* 종료(END) 버튼 — 헤더 우측 끝(언어 버튼을 좌측으로 밀어냄) */
+#exitBtn{margin-left:auto;display:none;font-family:var(–font);font-size:var(–lang-size);font-weight:700;
+color:#fff;background:var(–accent);border:0.12cqw solid var(–accent);border-radius:3cqw;
+padding:1.4cqw 3.4cqw;cursor:pointer;line-height:1;letter-spacing:.1cqw}
 
-  .stage{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
-  .viewport{position:relative;height:100%;width:100%;border-radius:var(--img-radius);overflow:hidden;background:#E6E8E6;isolation:isolate}
-  .track{display:flex;height:100%;will-change:transform;overflow:visible}
-  .cell{flex:0 0 auto;width:100%;height:100%;position:relative;overflow:hidden;background:#E6E8E6;flex-shrink:0}
-  .cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
-    -webkit-user-drag:none;user-select:none;pointer-events:none}
-  /* 모델컷: 같은 이미지를 흐리게 확대해 배경을 채우고(bgblur), 원본은 잘림 없이 전체 표시(fg/contain) */
-  .cell img.bgblur{object-fit:cover;filter:blur(1.8cqw) saturate(1.08);transform:scale(1.12);z-index:0}
-  .cell img.fg{object-fit:contain;z-index:1}
-  .phl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1cqw;color:#3A332C}
-  .phl .pn{font-size:5cqw;font-weight:700;opacity:.5;letter-spacing:.1cqw}
-  .phl .pv{font-size:2.8cqw;opacity:.45;text-transform:uppercase;letter-spacing:.4cqw}
-  .ov{position:absolute;z-index:2;pointer-events:none}
-  .counter{top:2.6cqw;right:2.6cqw;background:var(--chip);color:var(--ink);font-size:var(--counter-size);padding:1cqw 2.4cqw;border-radius:6cqw}
+#content{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0 var(–pad-x);will-change:transform}
+.pbar{display:flex;gap:1.5cqw;padding:0 0 var(–pbar-mb);flex:0 0 auto}
+.seg{flex:1;height:0.85cqw;border-radius:1cqw;background:var(–line-2);border:0;padding:0;cursor:pointer;transition:background .25s}
+.seg.on{background:var(–accent)}
 
-  .idots{display:flex;gap:1.4cqw;justify-content:center;padding:var(--idots-pt) 0 0.4cqw;flex:0 0 auto}
-  .idot{width:1.5cqw;height:1.5cqw;border-radius:50%;background:var(--line-2);border:0;padding:0;cursor:pointer}
-  .idot.on{width:5cqw;border-radius:.8cqw;background:var(--accent)}
+.stage{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
+.viewport{position:relative;height:100%;width:100%;border-radius:var(–img-radius);overflow:hidden;background:#E6E8E6;isolation:isolate}
+.track{display:flex;height:100%;will-change:transform;overflow:visible}
+.cell{flex:0 0 auto;width:100%;height:100%;position:relative;overflow:hidden;background:#E6E8E6;flex-shrink:0}
+.cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+-webkit-user-drag:none;user-select:none;pointer-events:none}
+/* 모델컷: 같은 이미지를 흐리게 확대해 배경을 채우고(bgblur), 원본은 잘림 없이 전체 표시(fg/contain) */
+.cell img.bgblur{object-fit:cover;filter:blur(1.8cqw) saturate(1.08);transform:scale(1.12);z-index:0}
+.cell img.fg{object-fit:contain;z-index:1}
+.phl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1cqw;color:#3A332C}
+.phl .pn{font-size:5cqw;font-weight:700;opacity:.5;letter-spacing:.1cqw}
+.phl .pv{font-size:2.8cqw;opacity:.45;text-transform:uppercase;letter-spacing:.4cqw}
+.ov{position:absolute;z-index:2;pointer-events:none}
+.counter{top:2.6cqw;right:2.6cqw;background:var(–chip);color:var(–ink);font-size:var(–counter-size);padding:1cqw 2.4cqw;border-radius:6cqw}
 
-  /* ===== 정보 영역 : 고정 레이아웃(언어 무관 동일 위치) ===== */
-  .info{flex:0 0 auto;position:relative;height:var(--info-h);padding:1cqw 1cqw 0}
-  .tags{position:absolute;top:var(--tags-top);left:1cqw;display:flex;gap:1.2cqw;align-items:center}
-  .badge{display:inline-flex;align-items:center;justify-content:center;font-size:var(--badge-size);line-height:1;padding:0.8cqw 2cqw 0.64cqw;border-radius:2cqw}
-  .badge.main{background:var(--accent);color:#fff}
-  .badge.sub{background:var(--accent-soft);color:var(--accent)}
-  .pno{display:inline-flex;align-items:center;justify-content:center;font-size:calc(var(--badge-size) - 0.1cqw);line-height:1;padding:0.75cqw 1.8cqw 0.59cqw;border-radius:2cqw;border:0.12cqw solid var(--line-2);color:var(--muted);letter-spacing:.06cqw}
+.idots{display:flex;gap:1.4cqw;justify-content:center;padding:var(–idots-pt) 0 0.4cqw;flex:0 0 auto}
+.idot{width:1.5cqw;height:1.5cqw;border-radius:50%;background:var(–line-2);border:0;padding:0;cursor:pointer}
+.idot.on{width:5cqw;border-radius:.8cqw;background:var(–accent)}
 
-  /* nrow : [상품명 — 컬러칩] 좌측 그룹 + 가격 우측 (상품명-칩 간격 고정) */
-  .nrow{position:absolute;top:var(--name-top);left:1cqw;right:1cqw;height:7cqw;display:flex;align-items:flex-end;justify-content:space-between;gap:2cqw}
-  .nleft{display:flex;align-items:center;gap:var(--name-chip-gap);min-width:0}
-  .name{font-size:var(--name-size);font-weight:700;color:var(--ink);letter-spacing:-.05cqw;white-space:nowrap;line-height:1}
-  .price{font-size:var(--price-size);font-weight:600;color:var(--ink);white-space:nowrap;line-height:1;flex:0 0 auto}
-  .chips{display:flex;gap:var(--chips-gap);align-items:center;flex:0 0 auto}
-  .chip-b{width:var(--chip-d);height:var(--chip-d);border-radius:50%;border:0.2cqw solid var(--line-2);padding:0;cursor:pointer;
-    transition:box-shadow .15s,transform .12s;background-clip:padding-box}
-  .chip-b:active{transform:scale(.9)}
-  .chip-b.on{box-shadow:0 0 0 0.6cqw var(--surface),0 0 0 1.05cqw var(--accent)}
+/* ===== 정보 영역 : 고정 레이아웃(언어 무관 동일 위치) ===== */
+.info{flex:0 0 auto;position:relative;height:var(–info-h);padding:1cqw 1cqw 0}
+.tags{position:absolute;top:var(–tags-top);left:1cqw;display:flex;gap:1.2cqw;align-items:center}
+.badge{display:inline-flex;align-items:center;justify-content:center;font-size:var(–badge-size);line-height:1;padding:0.8cqw 2cqw 0.64cqw;border-radius:2cqw}
+.badge.main{background:var(–accent);color:#fff}
+.badge.sub{background:var(–accent-soft);color:var(–accent)}
+.pno{display:inline-flex;align-items:center;justify-content:center;font-size:calc(var(–badge-size) - 0.1cqw);line-height:1;padding:0.75cqw 1.8cqw 0.59cqw;border-radius:2cqw;border:0.12cqw solid var(–line-2);color:var(–muted);letter-spacing:.06cqw}
 
-  .ensub{position:absolute;top:var(--ensub-top);left:1cqw;right:1cqw;height:3.6cqw;overflow:hidden;
-    font-size:var(--ensub-size);color:var(--accent);letter-spacing:.02cqw;white-space:nowrap;text-overflow:ellipsis}
-  .desc{position:absolute;top:var(--desc-top);left:1cqw;right:1cqw;height:calc(var(--spec-top) - var(--desc-top) - 0.6cqw);overflow:hidden;
-    font-size:var(--desc-size);line-height:1.45;color:var(--ink)}
-  .spec{position:absolute;top:var(--spec-top);left:1cqw;right:1cqw;padding-top:1.2cqw;border-top:0.12cqw solid var(--line);
-    font-size:var(--spec-size);color:var(--muted)}
+/* nrow : [상품명 — 컬러칩] 좌측 그룹 + 가격 우측 (상품명-칩 간격 고정) */
+.nrow{position:absolute;top:var(–name-top);left:1cqw;right:1cqw;height:7cqw;display:flex;align-items:flex-end;justify-content:space-between;gap:2cqw}
+.nleft{display:flex;align-items:center;gap:var(–name-chip-gap);min-width:0}
+.name{font-size:var(–name-size);font-weight:700;color:var(–ink);letter-spacing:-.05cqw;white-space:nowrap;line-height:1}
+.price{font-size:var(–price-size);font-weight:600;color:var(–ink);white-space:nowrap;line-height:1;flex:0 0 auto}
+.chips{display:flex;gap:var(–chips-gap);align-items:center;flex:0 0 auto}
+.chip-b{width:var(–chip-d);height:var(–chip-d);border-radius:50%;border:0.2cqw solid var(–line-2);padding:0;cursor:pointer;
+transition:box-shadow .15s,transform .12s;background-clip:padding-box}
+.chip-b:active{transform:scale(.9)}
+.chip-b.on{box-shadow:0 0 0 0.6cqw var(–surface),0 0 0 1.05cqw var(–accent)}
 
-  .hint{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:2cqw;color:var(--muted);font-size:var(--hint-size);padding:1cqw 0 1.6cqw;transition:opacity .4s}
+.ensub{position:absolute;top:var(–ensub-top);left:1cqw;right:1cqw;height:3.6cqw;overflow:hidden;
+font-size:var(–ensub-size);color:var(–accent);letter-spacing:.02cqw;white-space:nowrap;text-overflow:ellipsis}
+.desc{position:absolute;top:var(–desc-top);left:1cqw;right:1cqw;height:calc(var(–spec-top) - var(–desc-top) - 0.6cqw);overflow:hidden;
+font-size:var(–desc-size);line-height:1.45;color:var(–ink)}
+.spec{position:absolute;top:var(–spec-top);left:1cqw;right:1cqw;padding-top:1.2cqw;border-top:0.12cqw solid var(–line);
+font-size:var(–spec-size);color:var(–muted)}
 
-  /* 카메라 미리보기 + 손동작 상태 */
-  .cam{position:absolute;left:6cqw;top:18cqw;width:19cqw;aspect-ratio:3/4;border-radius:2.4cqw;overflow:hidden;background:#111;z-index:6;border:0.2cqw solid var(--line-2);display:none}
-  .cam.on{display:block}
-  .cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-  .cam canvas{position:absolute;inset:0;width:100%;height:100%}
-  .cam .clbl{position:absolute;top:1cqw;left:1cqw;font-size:1.9cqw;color:#fff;background:rgba(0,0,0,.45);padding:.4cqw 1.4cqw;border-radius:3cqw}
-  .flash{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);z-index:7;font-size:9cqw;color:var(--accent);
-    opacity:0;pointer-events:none;font-weight:700}
-  .flash.go{animation:pop .55s ease}
-  @keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}30%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
+.hint{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:2cqw;color:var(–muted);font-size:var(–hint-size);padding:1cqw 0 1.6cqw;transition:opacity .4s}
 
-  #overlay{position:absolute;inset:0;z-index:20;background:rgba(18,40,56,.94);color:#fff;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2cqw;text-align:center;padding:9cqw}
-  #overlay h1{font-size:5cqw;font-weight:700;margin:0}
-  #overlay p{font-size:3cqw;color:#e8e3da;margin:0;line-height:1.6}
-  .ovlangs{display:flex;gap:1.8cqw;flex-wrap:wrap;justify-content:center;margin-bottom:1cqw}
-  .ovlang{font-family:var(--font);font-size:2.9cqw;color:#fff;background:rgba(255,255,255,.12);
-    border:0.2cqw solid rgba(255,255,255,.55);border-radius:6cqw;padding:1.5cqw 4cqw;cursor:pointer;line-height:1}
-  .ovlang.on{background:#fff;color:var(--ink);border-color:#fff}
-  #start{font-family:var(--font);font-size:3.4cqw;font-weight:600;color:#fff;background:var(--accent);
-    border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:1cqw}
-  .ghand{font-size:9cqw;animation:palm 1.4s ease-in-out infinite}
-  @keyframes palm{0%,100%{transform:translateX(-2.6cqw) rotate(-6deg)}50%{transform:translateX(2.6cqw) rotate(6deg)}}
-  @media(prefers-reduced-motion:reduce){.ghand{animation:none}}
+/* 카메라 미리보기 + 손동작 상태 */
+.cam{position:absolute;left:6cqw;top:18cqw;width:19cqw;aspect-ratio:3/4;border-radius:2.4cqw;overflow:hidden;background:#111;z-index:6;border:0.2cqw solid var(–line-2);display:none}
+.cam.on{display:block}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.cam canvas{position:absolute;inset:0;width:100%;height:100%}
+.cam .clbl{position:absolute;top:1cqw;left:1cqw;font-size:1.9cqw;color:#fff;background:rgba(0,0,0,.45);padding:.4cqw 1.4cqw;border-radius:3cqw}
+.flash{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);z-index:7;font-size:9cqw;color:var(–accent);
+opacity:0;pointer-events:none;font-weight:700}
+.flash.go{animation:pop .55s ease}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}30%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
+
+#overlay{position:absolute;inset:0;z-index:20;background:rgba(18,40,56,.94);color:#fff;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2cqw;text-align:center;padding:9cqw}
+#overlay h1{font-size:5cqw;font-weight:700;margin:0}
+#overlay p{font-size:3cqw;color:#e8e3da;margin:0;line-height:1.6}
+.ovlangs{display:flex;gap:1.8cqw;flex-wrap:wrap;justify-content:center;margin-bottom:1cqw}
+.ovlang{font-family:var(–font);font-size:2.9cqw;color:#fff;background:rgba(255,255,255,.12);
+border:0.2cqw solid rgba(255,255,255,.55);border-radius:6cqw;padding:1.5cqw 4cqw;cursor:pointer;line-height:1}
+.ovlang.on{background:#fff;color:var(–ink);border-color:#fff}
+#start{font-family:var(–font);font-size:3.4cqw;font-weight:600;color:#fff;background:var(–accent);
+border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:1cqw}
+.ghand{font-size:9cqw;animation:palm 1.4s ease-in-out infinite}
+@keyframes palm{0%,100%{transform:translateX(-2.6cqw) rotate(-6deg)}50%{transform:translateX(2.6cqw) rotate(6deg)}}
+@media(prefers-reduced-motion:reduce){.ghand{animation:none}}
 </style>
+
 </head>
 <body>
 <div id="frame">
@@ -218,23 +223,23 @@ const PRODUCTS=[
    desc:{kr:"곡선적 형태감이 돋보이는 디스커버리 베스트 액티브 메리제인 스니커즈",en:"Discovery's best-selling active Mary Jane sneaker with a sculpted silhouette",cn:"曲线轮廓出众的 Discovery 人气运动玛丽珍运动鞋",jp:"曲線的なシルエットが際立つ、ディスカバリー人気のアクティブメリージェーンスニーカー"},
    colors:[
      {code:"BDS",name:{kr:"버건디",en:"Burgundy"},chip:"#6B3A44",imgs:mk(
-       ["1) 웨이브제인/01)BDS/01) 모델컷.jpg","1) 웨이브제인/01)BDS/02) 모델컷.jpg"],
-       ["1) 웨이브제인/01)BDS/03) 제품컷.png","1) 웨이브제인/01)BDS/04) 제품컷.jpg","1) 웨이브제인/01)BDS/05) 제품컷.jpg","1) 웨이브제인/01)BDS/06) 제품컷.jpg"])},
+       ["1) 웨이브제인/01)bds/01) 모델컷.jpg","1) 웨이브제인/01)bds/02) 모델컷.jpg"],
+       ["1) 웨이브제인/01)bds/03) 제품컷.png","1) 웨이브제인/01)bds/04) 제품컷.jpg","1) 웨이브제인/01)bds/05) 제품컷.jpg","1) 웨이브제인/01)bds/06) 제품컷.jpg"])},
      {code:"RDS",name:{kr:"레드",en:"Red"},chip:"#C0202B",imgs:mk(
        [],
-       ["1) 웨이브제인/02)RDS/DXSH7275N-RDS_02_MS.png","1) 웨이브제인/02)RDS/DXSH7275N-RDS_12_S.jpg","1) 웨이브제인/02)RDS/DXSH7275N-RDS_13_S.jpg","1) 웨이브제인/02)RDS/DXSH7275N-RDS_15_S.jpg"])},
+       ["1) 웨이브제인/02)rds/DXSH7275N-RDS_02_MS.png","1) 웨이브제인/02)rds/DXSH7275N-RDS_12_S.jpg","1) 웨이브제인/02)rds/DXSH7275N-RDS_13_S.jpg","1) 웨이브제인/02)rds/DXSH7275N-RDS_15_S.jpg"])},
      {code:"BLL",name:{kr:"라이트블루",en:"Light Blue"},chip:"#C9D5E6",imgs:mk(
-       ["1) 웨이브제인/03)BLL/01) 모델컷.jpg","1) 웨이브제인/03)BLL/02) 모델컷.jpg"],
-       ["1) 웨이브제인/03)BLL/DXSH7275N-BLL_02_S.png","1) 웨이브제인/03)BLL/DXSH7275N-BLL_12_S.jpg","1) 웨이브제인/03)BLL/DXSH7275N-BLL_13_S.jpg","1) 웨이브제인/03)BLL/DXSH7275N-BLL_15_S.jpg"])},
+       ["1) 웨이브제인/03)bll/01) 모델컷.jpg","1) 웨이브제인/03)bll/02) 모델컷.jpg"],
+       ["1) 웨이브제인/03)bll/DXSH7275N-BLL_02_S.png","1) 웨이브제인/03)bll/DXSH7275N-BLL_12_S.jpg","1) 웨이브제인/03)bll/DXSH7275N-BLL_13_S.jpg","1) 웨이브제인/03)bll/DXSH7275N-BLL_15_S.jpg"])},
      {code:"VOL",name:{kr:"라벤더",en:"Lavender"},chip:"#CDBFD6",imgs:mk(
        [],
-       ["1) 웨이브제인/04)VOL/DXSH7275N-VOL_01_MS.png","1) 웨이브제인/04)VOL/DXSH7275N-VOL_12_S.jpg","1) 웨이브제인/04)VOL/DXSH7275N-VOL_13_S.jpg","1) 웨이브제인/04)VOL/DXSH7275N-VOL_15_S.jpg"])},
+       ["1) 웨이브제인/04)vol/DXSH7275N-VOL_01_MS.png","1) 웨이브제인/04)vol/DXSH7275N-VOL_12_S.jpg","1) 웨이브제인/04)vol/DXSH7275N-VOL_13_S.jpg","1) 웨이브제인/04)vol/DXSH7275N-VOL_15_S.jpg"])},
      {code:"GRL",name:{kr:"그레이",en:"Gray"},chip:"#CBCCC9",imgs:mk(
-       ["1) 웨이브제인/05)GRL/01) 모델컷.jpg","1) 웨이브제인/05)GRL/02) 모델컷.jpg"],
-       ["1) 웨이브제인/05)GRL/DXSH7275N-GRL_01_MS.png","1) 웨이브제인/05)GRL/DXSH7275N-GRL_12_S.jpg","1) 웨이브제인/05)GRL/DXSH7275N-GRL_13_S.jpg","1) 웨이브제인/05)GRL/DXSH7275N-GRL_15_S.jpg"])},
+       ["1) 웨이브제인/05)grl/01) 모델컷.jpg","1) 웨이브제인/05)grl/02) 모델컷.jpg"],
+       ["1) 웨이브제인/05)grl/DXSH7275N-GRL_01_MS.png","1) 웨이브제인/05)grl/DXSH7275N-GRL_12_S.jpg","1) 웨이브제인/05)grl/DXSH7275N-GRL_13_S.jpg","1) 웨이브제인/05)grl/DXSH7275N-GRL_15_S.jpg"])},
      {code:"BKD",name:{kr:"블랙",en:"Black"},chip:"#1E1E1E",imgs:mk(
-       ["1) 웨이브제인/06)BKD/01) 모델컷.jpg","1) 웨이브제인/06)BKD/02) 모델컷.jpg"],
-       ["1) 웨이브제인/06)BKD/DXSH7275N-BKD_01_MS.png","1) 웨이브제인/06)BKD/DXSH7275N-BKD_12_S.jpg","1) 웨이브제인/06)BKD/DXSH7275N-BKD_13_S.jpg","1) 웨이브제인/06)BKD/DXSH7275N-BKD_15_S.jpg"])}
+       ["1) 웨이브제인/06)bkd/01) 모델컷.jpg","1) 웨이브제인/06)bkd/02) 모델컷.jpg"],
+       ["1) 웨이브제인/06)bkd/DXSH7275N-BKD_01_MS.png","1) 웨이브제인/06)bkd/DXSH7275N-BKD_12_S.jpg","1) 웨이브제인/06)bkd/DXSH7275N-BKD_13_S.jpg","1) 웨이브제인/06)bkd/DXSH7275N-BKD_15_S.jpg"])}
    ]},
 
   {nameKr:"웨이브 스트랩",nameEn:"Wave Strap",code:"DXSH7336N",flag:"new",price:"₩119,000",weight:"214g",heel:"3cm",
@@ -242,17 +247,17 @@ const PRODUCTS=[
    desc:{kr:"가벼운 슬림 핏으로 감각적인 데일리 룩을 완성하는 메리제인 스니커즈",en:"A slim and lightweight Mary Jane sneaker for a chic everyday look",cn:"轻盈修身，打造时尚日常风格的玛丽珍运动鞋",jp:"軽くスリムなフィットで、洗練されたデイリースタイルを演出するメリージェーンスニーカー"},
    colors:[
      {code:"BGL",name:{kr:"아이보리",en:"Ivory"},chip:"#EAE3D6",imgs:mk(
-       ["2) 웨이브스트랩/01) BGL/01) 모델컷.jpg","2) 웨이브스트랩/01) BGL/02) 모델컷.jpg"],
-       ["2) 웨이브스트랩/01) BGL/DXSH7336N-BGL_01_MS.jpg","2) 웨이브스트랩/01) BGL/DXSH7336N-BGL_12_S.jpg","2) 웨이브스트랩/01) BGL/DXSH7336N-BGL_13_S.jpg","2) 웨이브스트랩/01) BGL/DXSH7336N-BGL_15_S.jpg"])},
+       ["2) 웨이브스트랩/01) bgl/01) 모델컷.jpg","2) 웨이브스트랩/01) bgl/02) 모델컷.jpg"],
+       ["2) 웨이브스트랩/01) bgl/DXSH7336N-BGL_01_MS.jpg","2) 웨이브스트랩/01) bgl/DXSH7336N-BGL_12_S.jpg","2) 웨이브스트랩/01) bgl/DXSH7336N-BGL_13_S.jpg","2) 웨이브스트랩/01) bgl/DXSH7336N-BGL_15_S.jpg"])},
      {code:"BKS",name:{kr:"블랙",en:"Black"},chip:"#2E3034",imgs:mk(
-       ["2) 웨이브스트랩/02) BKS/01) 모델컷.jpg","2) 웨이브스트랩/02) BKS/02) 모델컷.jpg"],
-       ["2) 웨이브스트랩/02) BKS/DXSH7336N-BKS_01_MS.jpg","2) 웨이브스트랩/02) BKS/DXSH7336N-BKS_12_S.jpg","2) 웨이브스트랩/02) BKS/DXSH7336N-BKS_13_S.jpg","2) 웨이브스트랩/02) BKS/DXSH7336N-BKS_15_S.jpg"])},
+       ["2) 웨이브스트랩/02) bks/01) 모델컷.jpg","2) 웨이브스트랩/02) bks/02) 모델컷.jpg"],
+       ["2) 웨이브스트랩/02) bks/DXSH7336N-BKS_01_MS.jpg","2) 웨이브스트랩/02) bks/DXSH7336N-BKS_12_S.jpg","2) 웨이브스트랩/02) bks/DXSH7336N-BKS_13_S.jpg","2) 웨이브스트랩/02) bks/DXSH7336N-BKS_15_S.jpg"])},
      {code:"BRD",name:{kr:"브라운",en:"Brown"},chip:"#4A3A31",imgs:mk(
        [],
-       ["2) 웨이브스트랩/03) BRD/DXSH7336N-BRD_01_MS.jpg","2) 웨이브스트랩/03) BRD/DXSH7336N-BRD_12_S.jpg","2) 웨이브스트랩/03) BRD/DXSH7336N-BRD_13_S.jpg","2) 웨이브스트랩/03) BRD/DXSH7336N-BRD_15_S.jpg"])},
+       ["2) 웨이브스트랩/03) brd/DXSH7336N-BRD_01_MS.jpg","2) 웨이브스트랩/03) brd/DXSH7336N-BRD_12_S.jpg","2) 웨이브스트랩/03) brd/DXSH7336N-BRD_13_S.jpg","2) 웨이브스트랩/03) brd/DXSH7336N-BRD_15_S.jpg"])},
      {code:"GRL",name:{kr:"그레이",en:"Gray"},chip:"#D4D6D6",imgs:mk(
        [],
-       ["2) 웨이브스트랩/04) GRL/DXSH7336N-GRL_01_MS.jpg","2) 웨이브스트랩/04) GRL/DXSH7336N-GRL_12_S.jpg","2) 웨이브스트랩/04) GRL/DXSH7336N-GRL_13_S.jpg","2) 웨이브스트랩/04) GRL/DXSH7336N-GRL_15_S.jpg"])}
+       ["2) 웨이브스트랩/04) grl/DXSH7336N-GRL_01_MS.jpg","2) 웨이브스트랩/04) grl/DXSH7336N-GRL_12_S.jpg","2) 웨이브스트랩/04) grl/DXSH7336N-GRL_13_S.jpg","2) 웨이브스트랩/04) grl/DXSH7336N-GRL_15_S.jpg"])}
    ]},
 
   {nameKr:"제인 라이트",nameEn:"Jane Lite",code:"DXSH5336N",flag:"new",price:"₩119,000",weight:"225g",heel:"3cm",
@@ -260,14 +265,14 @@ const PRODUCTS=[
    desc:{kr:"발등을 덮는 안정적인 착화감과 메리제인 실루엣에서 영감 받은 로우 프로파일 스니커즈",en:"A low-profile sneaker inspired by the Mary Jane silhouette",cn:"灵感源自玛丽珍轮廓的低轮廓运动鞋",jp:"メリージェーンシルエットから着想したロープロファイルスニーカー"},
    colors:[
      {code:"WHS",name:{kr:"화이트",en:"White"},chip:"#F1ECE2",imgs:mk(
-       ["3) 제인라이트/01)WHS/01_모델컷.jpg"],
-       ["3) 제인라이트/01)WHS/DXSH5336_WHS_01_MS.png","3) 제인라이트/01)WHS/DXSH5336_WHS_12_S.jpg","3) 제인라이트/01)WHS/DXSH5336_WHS_13_S.jpg","3) 제인라이트/01)WHS/DXSH5336_WHS_15_S.jpg"])},
+       ["3) 제인라이트/01)whs/01_모델컷.jpg"],
+       ["3) 제인라이트/01)whs/DXSH5336_WHS_01_MS.png","3) 제인라이트/01)whs/DXSH5336_WHS_12_S.jpg","3) 제인라이트/01)whs/DXSH5336_WHS_13_S.jpg","3) 제인라이트/01)whs/DXSH5336_WHS_15_S.jpg"])},
      {code:"BLL",name:{kr:"라이트블루",en:"Light Blue"},chip:"#DCE5EE",imgs:mk(
        [],
-       ["3) 제인라이트/02)BLL/DXSH5336N-BLL_01_MS.png","3) 제인라이트/02)BLL/DXSH5336N-BLL_12_S.jpg","3) 제인라이트/02)BLL/DXSH5336N-BLL_13_S.jpg","3) 제인라이트/02)BLL/DXSH5336N-BLL_15_S.jpg"])},
+       ["3) 제인라이트/02)bll/DXSH5336N-BLL_01_MS.png","3) 제인라이트/02)bll/DXSH5336N-BLL_12_S.jpg","3) 제인라이트/02)bll/DXSH5336N-BLL_13_S.jpg","3) 제인라이트/02)bll/DXSH5336N-BLL_15_S.jpg"])},
      {code:"BKS",name:{kr:"블랙",en:"Black"},chip:"#1C1C1C",imgs:mk(
        [],
-       ["3) 제인라이트/03)BKS/DXSH5336N-BKS_01_MS.png","3) 제인라이트/03)BKS/DXSH5336N-BKS_12_S.jpg","3) 제인라이트/03)BKS/DXSH5336N-BKS_13_S.jpg","3) 제인라이트/03)BKS/DXSH5336N-BKS_15_S.jpg"])}
+       ["3) 제인라이트/03)bks/DXSH5336N-BKS_01_MS.png","3) 제인라이트/03)bks/DXSH5336N-BKS_12_S.jpg","3) 제인라이트/03)bks/DXSH5336N-BKS_13_S.jpg","3) 제인라이트/03)bks/DXSH5336N-BKS_15_S.jpg"])}
    ]},
 
   {nameKr:"웨이브 샌디",nameEn:"Wave Sandy",code:"DXSH7244N",flag:"new",price:"₩109,000",weight:"231g",heel:"3.5cm",
@@ -275,20 +280,20 @@ const PRODUCTS=[
    desc:{kr:"곡선적인 형태감이 돋보이는 아웃도어 스니커즈 샌들",en:"An outdoor sneaker-sandal with a sculpted silhouette",cn:"曲线轮廓出众的户外运动凉鞋",jp:"曲線的なシルエットが際立つアウトドアスニーカーサンダル"},
    colors:[
      {code:"BES",name:{kr:"베이지",en:"Beige"},chip:"#E3D8C3",imgs:mk(
-       ["4) 웨이브샌디/01) BES/01) 모델컷.jpg","4) 웨이브샌디/01) BES/02) 모델컷.jpg"],
-       ["4) 웨이브샌디/01) BES/DXSH7244N-BES_01_MS.jpg","4) 웨이브샌디/01) BES/DXSH7244N-BES_12_S.jpg","4) 웨이브샌디/01) BES/DXSH7244N-BES_13_S.jpg","4) 웨이브샌디/01) BES/DXSH7244N-BES_15_S.jpg"])},
+       ["4) 웨이브샌디/01) bes/01) 모델컷.jpg","4) 웨이브샌디/01) bes/02) 모델컷.jpg"],
+       ["4) 웨이브샌디/01) bes/DXSH7244N-BES_01_MS.jpg","4) 웨이브샌디/01) bes/DXSH7244N-BES_12_S.jpg","4) 웨이브샌디/01) bes/DXSH7244N-BES_13_S.jpg","4) 웨이브샌디/01) bes/DXSH7244N-BES_15_S.jpg"])},
      {code:"WHS",name:{kr:"화이트",en:"White"},chip:"#F1F0EC",imgs:mk(
-       ["4) 웨이브샌디/02) WHS/01) 모델컷.jpg","4) 웨이브샌디/02) WHS/02) 모델컷.jpg"],
-       ["4) 웨이브샌디/02) WHS/DXSH7244N-WHS_01_MS.jpg","4) 웨이브샌디/02) WHS/DXSH7244N-WHS_12_S.jpg","4) 웨이브샌디/02) WHS/DXSH7244N-WHS_13_S.jpg","4) 웨이브샌디/02) WHS/DXSH7244N-WHS_15_S.jpg"])},
+       ["4) 웨이브샌디/02) whs/01) 모델컷.jpg","4) 웨이브샌디/02) whs/02) 모델컷.jpg"],
+       ["4) 웨이브샌디/02) whs/DXSH7244N-WHS_01_MS.jpg","4) 웨이브샌디/02) whs/DXSH7244N-WHS_12_S.jpg","4) 웨이브샌디/02) whs/DXSH7244N-WHS_13_S.jpg","4) 웨이브샌디/02) whs/DXSH7244N-WHS_15_S.jpg"])},
      {code:"BKS",name:{kr:"블랙",en:"Black"},chip:"#1E1E1E",imgs:mk(
        [],
-       ["4) 웨이브샌디/03) BKS/DXSH7244N-BKS_01_MS.jpg","4) 웨이브샌디/03) BKS/DXSH7244N-BKS_12_S.jpg","4) 웨이브샌디/03) BKS/DXSH7244N-BKS_13_S.jpg","4) 웨이브샌디/03) BKS/DXSH7244N-BKS_15_S.jpg"])},
+       ["4) 웨이브샌디/03) bks/DXSH7244N-BKS_01_MS.jpg","4) 웨이브샌디/03) bks/DXSH7244N-BKS_12_S.jpg","4) 웨이브샌디/03) bks/DXSH7244N-BKS_13_S.jpg","4) 웨이브샌디/03) bks/DXSH7244N-BKS_15_S.jpg"])},
      {code:"SIL",name:{kr:"실버",en:"Silver"},chip:"#CBCED0",imgs:mk(
        [],
-       ["4) 웨이브샌디/04) SIL/DXSH7244N-SIL_01_MS.jpg","4) 웨이브샌디/04) SIL/DXSH7244N-SIL_12_S.jpg","4) 웨이브샌디/04) SIL/DXSH7244N-SIL_13_S.jpg","4) 웨이브샌디/04) SIL/DXSH7244N-SIL_15_S.jpg"])},
+       ["4) 웨이브샌디/04) sil/DXSH7244N-SIL_01_MS.jpg","4) 웨이브샌디/04) sil/DXSH7244N-SIL_12_S.jpg","4) 웨이브샌디/04) sil/DXSH7244N-SIL_13_S.jpg","4) 웨이브샌디/04) sil/DXSH7244N-SIL_15_S.jpg"])},
      {code:"ZBS",name:{kr:"블랙화이트",en:"Black & White"},chip:"linear-gradient(135deg,#1c1c1c 0 50%,#f0efea 50% 100%)",imgs:mk(
        [],
-       ["4) 웨이브샌디/05) ZBS/DXSH7244N-ZBS_08_MS.jpg","4) 웨이브샌디/05) ZBS/DXSH7244N-ZBS_12_S.jpg","4) 웨이브샌디/05) ZBS/DXSH7244N-ZBS_13_S.jpg","4) 웨이브샌디/05) ZBS/DXSH7244N-ZBS_15_S.jpg"])}
+       ["4) 웨이브샌디/05) zbs/DXSH7244N-ZBS_08_MS.jpg","4) 웨이브샌디/05) zbs/DXSH7244N-ZBS_12_S.jpg","4) 웨이브샌디/05) zbs/DXSH7244N-ZBS_13_S.jpg","4) 웨이브샌디/05) zbs/DXSH7244N-ZBS_15_S.jpg"])}
    ]}
 ];
 
@@ -533,5 +538,6 @@ function exitKiosk(){
 $("exitBtn").addEventListener("click",exitKiosk);
 document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement && $("exitBtn").style.display==="block") exitKiosk(); });
 </script>
+
 </body>
 </html>
