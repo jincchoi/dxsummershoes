@@ -81,9 +81,9 @@ padding:1.4cqw 3.4cqw;cursor:pointer;line-height:1;letter-spacing:.1cqw}
 .seg.on{background:var(–accent)}
 
 .stage{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
-.viewport{position:relative;height:100%;width:100%;border-radius:var(–img-radius);overflow:hidden;background:#E6E8E6;isolation:isolate}
-.track{display:flex;height:100%;will-change:transform;overflow:visible}
-.cell{flex:0 0 auto;width:100%;height:100%;position:relative;overflow:hidden;background:#E6E8E6;flex-shrink:0}
+.viewport{position:relative;height:100%;width:100%;border-radius:var(–img-radius);overflow:hidden;background:#E6E8E6}
+.track{display:flex;height:100%;will-change:transform}
+.cell{flex:0 0 auto;height:100%;position:relative;overflow:hidden;background:#E6E8E6}
 .cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
 -webkit-user-drag:none;user-select:none;pointer-events:none}
 /* 모델컷: 같은 이미지를 흐리게 확대해 배경을 채우고(bgblur), 원본은 잘림 없이 전체 표시(fg/contain) */
@@ -151,6 +151,18 @@ border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:1cqw}
 .ghand{font-size:9cqw;animation:palm 1.4s ease-in-out infinite}
 @keyframes palm{0%,100%{transform:translateX(-2.6cqw) rotate(-6deg)}50%{transform:translateX(2.6cqw) rotate(6deg)}}
 @media(prefers-reduced-motion:reduce){.ghand{animation:none}}
+/* 프로그레스 링 */
+#palmProgress{position:absolute;bottom:6cqw;left:50%;transform:translateX(-50%);z-index:25;
+display:flex;flex-direction:column;align-items:center;gap:1.5cqw;opacity:0;transition:opacity .3s;pointer-events:none}
+#palmProgress.on{opacity:1}
+#palmProgress svg{width:12cqw;height:12cqw;filter:drop-shadow(0 0 1.5cqw rgba(30,127,181,.5))}
+#palmProgress .prog-txt{font-size:2.4cqw;color:#fff;font-weight:600}
+.prog-bg{fill:none;stroke:rgba(255,255,255,.2);stroke-width:3}
+.prog-fg{fill:none;stroke:#1E7FB5;stroke-width:3;stroke-linecap:round;
+stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset .1s linear;
+transform:rotate(-90deg);transform-origin:50% 50%}
+/* 힌트 transition 개선 */
+.hint{transition:opacity 1s}
 </style>
 
 </head>
@@ -160,7 +172,7 @@ border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:1cqw}
     <header>
       <img class="brand-logo" src="LOGO_gREY-01.png" alt="Discovery Expedition">
       <div class="langs" id="langs"></div>
-      <button id="exitBtn">END</button>
+      <button id="exitBtn">종료하기</button>
     </header>
     <div id="content">
       <div class="pbar" id="pbar"></div>
@@ -183,6 +195,14 @@ border:0;border-radius:3cqw;padding:3cqw 8cqw;cursor:pointer;margin-top:1cqw}
     <h1 id="ovTitle"></h1>
     <p id="ovGuide"></p>
     <button id="start"></button>
+  </div>
+  <!-- 손바닥 감지 프로그레스 링 -->
+  <div id="palmProgress">
+    <svg viewBox="0 0 36 36">
+      <circle class="prog-bg" cx="18" cy="18" r="15.9"/>
+      <circle class="prog-fg" id="progCircle" cx="18" cy="18" r="15.9"/>
+    </svg>
+    <span class="prog-txt">손바닥을 유지해 주세요</span>
   </div>
 </div>
 
@@ -305,9 +325,7 @@ const curColor=()=>PRODUCTS[shoe].colors[colorIdx];
 
 function renderLangs(){$("langs").innerHTML=["kr","en","cn","jp"].map(l=>`<button class="lang ${l===lang?"on":""}" onclick="setLang('${l}')">${T[l].lang}</button>`).join("");}
 function buildTrack(){const p=PRODUCTS[shoe],c=curColor();
-  track.innerHTML=c.imgs.map(im=>{
-    // 경로의 각 세그먼트를 개별 인코딩 (한글/공백/특수문자 안전 처리)
-    const src=im.src.split('/').map(seg=>encodeURIComponent(seg)).join('/');
+  track.innerHTML=c.imgs.map(im=>{const src=im.src.split('/').map(s=>encodeURIComponent(s)).join('/');
     const alt=`${p.nameEn} ${c.code} ${VIEW[im.view][lang]}`;
     const phl=`<div class="phl"><span class="pn">${p.nameEn}</span><span class="pv">${VIEW[im.view][lang]}</span></div>`;
     // 모델컷·제품컷 모두 4:5 비율 적용 완료 → 별도 가공 없이 그대로 cover
@@ -329,11 +347,7 @@ function renderInfo(){const p=PRODUCTS[shoe],fb=F[p.flag][lang],c=curColor();
 function renderIdots(){const c=curColor();$("idots").innerHTML=c.imgs.map((im,k)=>`<button class="idot ${k===img?"on":""}" onclick="imgDot(${k})" aria-label="${k+1}"></button>`).join("");}
 function renderPbar(){$("pbar").innerHTML=PRODUCTS.map((p,i)=>`<button class="seg ${i===shoe?"on":""}" onclick="shoeJump(${i})" aria-label="${p.nameEn}"></button>`).join("");}
 function renderHint(){$("hint").innerHTML=`<span>${T[lang].hint}</span>`;}
-function size(){
-  IW=ivp.clientWidth;
-  [...track.children].forEach(c=>{c.style.width=IW+"px";c.style.minWidth=IW+"px";});
-  place(false);
-}
+function size(){IW=ivp.clientWidth;[...track.children].forEach(c=>c.style.width=IW+"px");place(false);}
 function place(a){
   track.style.transition=a?"transform .38s cubic-bezier(.22,.61,.36,1)":"none";
   let off=axis==="x"?dx:0;
@@ -341,7 +355,7 @@ function place(a){
   if((img===0&&off>0)||(img===len-1&&off<0))off*=0.35;
   track.style.transform=`translateX(${-img*IW+off}px)`;
 }
-function dim(){$("hint").style.opacity=".4";}
+let _hintT=null;function dim(){clearTimeout(_hintT);_hintT=setTimeout(()=>{$("hint").style.opacity=".4";},10000);}
 function setImg(n){const len=curColor().imgs.length;img=Math.max(0,Math.min(len-1,n));place(true);renderIdots();updateOv();dim();resetIdle();}
 /* 이미지 이동 — 끝까지 가면 다음/이전 상품으로 자동 전환 */
 function navImage(dir){
@@ -364,7 +378,9 @@ function shoeStep(d){const ns=Math.max(0,Math.min(PRODUCTS.length-1,shoe+d));con
 function renderOverlay(){const t=INTRO[lang];
   $("ovLangs").innerHTML=["kr","en","cn","jp"].map(l=>`<button class="ovlang ${l===lang?"on":""}" onclick="setLang('${l}')">${T[l].lang}</button>`).join("");
   $("ovTitle").textContent=t.title;$("ovGuide").innerHTML=t.guide;$("start").textContent=t.start;}
-window.setLang=l=>{lang=l;renderLangs();renderHint();buildTrack();renderInfo();renderIdots();renderOverlay();resetIdle();};
+window.setLang=l=>{lang=l;renderLangs();renderHint();buildTrack();renderInfo();renderIdots();renderOverlay();resetIdle();
+  $('exitBtn').textContent={kr:'종료하기',en:'Exit',cn:'退出',jp:'終了'}[l]||'Exit';
+};
 window.setColor=k=>setColor(k);
 window.shoeBtn=d=>shoeStep(d);
 window.shoeJump=i=>shoeStep(i-shoe);
@@ -407,7 +423,8 @@ document.addEventListener("contextmenu",e=>e.preventDefault());
 let idleT=null;
 function resetIdle(){clearTimeout(idleT);idleT=setTimeout(goIntro,300000);}
 function goIntro(){shoe=0;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();
-  $("exitBtn").style.display="none";$("overlay").style.display="flex";$("hint").style.opacity="1";}
+  $("exitBtn").style.display="none";$("overlay").style.display="flex";$("hint").style.opacity="1";
+  palmStartCount=0;updatePalmProgress(0);$("cam").classList.add("on");}
 
 /* 손동작으로 동작 실행 */
 function flash(txt){const f=$("flash");f.textContent=txt;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");}
@@ -459,6 +476,13 @@ function classify(lm){const f=fingerExt(lm),up=f.filter(Boolean).length;
 let poseHold=null,poseCount=0,palmZone=0,palmCount=0;
 let palmStartCount=0;
 const PALM_START_FRAMES=18;
+function updatePalmProgress(n){
+  const el=$("palmProgress"),c=$("progCircle");
+  if(!el||!c)return;
+  if(n<=0){el.classList.remove("on");c.style.strokeDashoffset="100";return;}
+  el.classList.add("on");
+  c.style.strokeDashoffset=String(100-(n/PALM_START_FRAMES*100));
+}
 function handle(res){
   const now=performance.now();
   if($("overlay").style.display!=="none"){
@@ -467,16 +491,17 @@ function handle(res){
       const f=fingerExt(lm),up=f.filter(Boolean).length;
       if(up>=4&&!isOK(lm)){
         palmStartCount++;
+        updatePalmProgress(palmStartCount);
         $("clbl").textContent="🖐 손바닥 인식 중...";
         if(palmStartCount>=PALM_START_FRAMES){
-          palmStartCount=0;
+          palmStartCount=0;updatePalmProgress(0);
           $("overlay").style.display="none";
           $("exitBtn").style.display="block";
-          resetIdle();
-          return;
+          $("exitBtn").textContent={kr:"종료하기",en:"Exit",cn:"退出",jp:"終了"}[lang]||"Exit";
+          resetIdle();return;
         }
-      } else { palmStartCount=0; $("clbl").textContent="손바닥을 보여주세요"; }
-    } else { palmStartCount=0; }
+      } else {palmStartCount=0;updatePalmProgress(0);$("clbl").textContent="손바닥을 보여주세요";}
+    } else {palmStartCount=0;updatePalmProgress(0);}
     poseHold=null;poseCount=0;palmZone=0;palmCount=0;return;
   }
   if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;palmZone=0;palmCount=0;$("clbl").textContent="손을 보여주세요";return;}
@@ -526,14 +551,14 @@ setTimeout(async()=>{
   } catch(err){ console.warn("auto camera failed:",err); }
 }, 3000);
 
-/* 종료하기 → 카메라/전체화면 해제 후 첫(시작) 화면으로 복귀 */
+/* 종료하기 → 카메라 유지, 오버레이 복귀 */
 function exitKiosk(){
-  try{ if(video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;} }catch(_){}
-  $("cam").classList.remove("on");
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   shoe=0;colorIdx=0;img=0;renderInfo();buildTrack();renderIdots();renderPbar();renderOverlay();
   $("exitBtn").style.display="none";
   $("overlay").style.display="flex";
+  palmStartCount=0;updatePalmProgress(0);
+  $("cam").classList.add("on");
 }
 $("exitBtn").addEventListener("click",exitKiosk);
 document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement && $("exitBtn").style.display==="block") exitKiosk(); });
