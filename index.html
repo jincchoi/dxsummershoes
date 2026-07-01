@@ -198,8 +198,8 @@
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
 
 /* ===== 손동작 민감도 설정 ===== */
-const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_DIST:0.13, COOLDOWN_MS:1200, IMG_COOLDOWN_MS:650 };
-/* POSE_FRAMES: 주먹/브이/OK 확정에 필요한 연속 프레임(클수록 오인식↓·반응↑) · SWIPE_DIST: 손바닥 좌우 스와이프 인식 이동량(화면폭 비율) */
+const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_DIST:0.13, STILL_MOVE:0.01, STILL_FRAMES:3, COOLDOWN_MS:1200, IMG_COOLDOWN_MS:500 };
+/* SWIPE_DIST: 스와이프 인식 이동량(화면폭 비율) · STILL_MOVE/STILL_FRAMES: 스와이프 후 "손이 멈췄다"고 판단할 프레임당 이동량·연속프레임(복귀 동작 무시용) */
 
 /* ===== 다국어 라벨 ===== */
 const T={
@@ -478,38 +478,46 @@ function classify(lm){const f=fingerExt(lm),up=f.filter(Boolean).length;
   if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";    // ✌ 브이 = 이전 상품
   if(up>=3)return "palm";                            // 🖐 손바닥 = 이미지 좌·우
   return null;}
-let poseHold=null,poseCount=0,startHold=0,palmRefX=null,palmRefT=0;
+let poseHold=null,poseCount=0,startHold=0,palmRefX=null,palmLastX=null,needStill=false,stillFrames=0;
+function resetPalm(){palmRefX=null;palmLastX=null;needStill=false;stillFrames=0;}
 function handle(res){
   const now=performance.now();
   if($("overlay").style.display!=="none"){                 // 가이드 화면: 🖐 손바닥을 펴 들면 시작
-    poseHold=null;poseCount=0;palmRefX=null;
+    poseHold=null;poseCount=0;resetPalm();
     if(res&&res.landmarks&&res.landmarks.length&&classify(res.landmarks[0])==="palm"){
       $("clbl").textContent="🖐 인식됨 — 시작합니다";
       if(++startHold>=CONFIG.START_FRAMES){startHold=0;beginKiosk();}
     } else {startHold=0;$("clbl").textContent="🖐 손바닥을 펴서 보여주세요";}
     return;
   }
-  if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;palmRefX=null;$("clbl").textContent="손을 보여주세요";return;}
+  if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;resetPalm();$("clbl").textContent="손을 보여주세요";return;}
   const lm=res.landmarks[0];
   const g=classify(lm);
   $("clbl").textContent = g==="fist"?"✊ 다음 상품":g==="scissors"?"✌ 이전 상품":g==="ok"?"👌 다른 컬러":g==="palm"?"🖐 손바닥 좌우로 밀기":"손을 보여주세요";
   if(now<cooldownUntil)return;
   if(g==="fist"||g==="scissors"||g==="ok"){       // ✊ 다음 상품 / ✌ 이전 상품 / 👌 다른 컬러 (연속 프레임 확정)
-    palmRefX=null;
+    resetPalm();
     if(g===poseHold)poseCount++; else {poseHold=g;poseCount=1;}
     if(poseCount>=CONFIG.POSE_FRAMES){
       if(g==="ok")gestureColor(); else gestureProduct(g==="fist"?1:-1);
       cooldownUntil=now+CONFIG.COOLDOWN_MS;poseHold=null;poseCount=0;}
-  } else if(g==="palm"){                          // 🖐 손바닥을 좌우로 "밀어" 이미지 넘김 (스와이프)
+  } else if(g==="palm"){                          // 🖐 손바닥을 좌우로 "밀어" 이미지 넘김 (복귀 동작은 무시)
     poseHold=null;poseCount=0;
     const sx=1-lm[9].x;                           // 화면(미러) 기준 손 가로 위치 0~1
-    if(palmRefX===null){palmRefX=sx;palmRefT=now;}
-    const move=sx-palmRefX;                       // + : 좌→우(오른쪽 이동) / − : 우→좌(왼쪽 이동)
-    if(Math.abs(move)>=CONFIG.SWIPE_DIST){
-      gestureImage(move>0?-1:1);                  // 좌→우 = 이전(왼쪽 이미지) / 우→좌 = 다음(오른쪽 이미지)
-      cooldownUntil=now+CONFIG.IMG_COOLDOWN_MS;palmRefX=null;
-    } else if(now-palmRefT>500){palmRefX=sx;palmRefT=now;}   // 느린 드리프트는 기준 갱신(오작동 방지)
-  } else {poseHold=null;poseCount=0;palmRefX=null;}
+    if(palmLastX===null)palmLastX=sx;
+    const fmove=Math.abs(sx-palmLastX); palmLastX=sx;   // 직전 프레임 대비 이동량(정지 판정용)
+    if(needStill){                                // 스와이프 직후: 손이 멈출 때까지 대기 → 되돌아오는 움직임 무시
+      $("clbl").textContent="🖐 멈췄다가 다시 밀어주세요";
+      if(fmove<CONFIG.STILL_MOVE){ if(++stillFrames>=CONFIG.STILL_FRAMES){needStill=false;stillFrames=0;palmRefX=sx;} } else stillFrames=0;
+    } else {
+      if(palmRefX===null)palmRefX=sx;
+      const move=sx-palmRefX;                     // + 좌→우(이전) / − 우→좌(다음)
+      if(Math.abs(move)>=CONFIG.SWIPE_DIST){
+        gestureImage(move>0?-1:1);                // 좌→우 = 이전(왼쪽) / 우→좌 = 다음(오른쪽)
+        cooldownUntil=now+CONFIG.IMG_COOLDOWN_MS;needStill=true;stillFrames=0;   // 정지할 때까지 잠금
+      }
+    }
+  } else {poseHold=null;poseCount=0;resetPalm();}
 }
 function draw(res){
   ctx.clearRect(0,0,cv.width,cv.height);
