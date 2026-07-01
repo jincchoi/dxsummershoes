@@ -200,8 +200,8 @@
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
 
 /* ===== 손동작 민감도 설정 ===== */
-const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_DIST:0.07, REF_FOLLOW:0.05, SWIPE_COOL:900, COOLDOWN_MS:1200 };
-/* SWIPE_DIST: 스와이프 인식 이동량(화면폭 비율, 클수록 둔감·오작동↓) · REF_FOLLOW: 평상시 기준점 추종(드리프트 흡수) · SWIPE_COOL: 스와이프 후 잠금시간(ms, 복귀 동작 흡수 — 크게 잡을수록 복귀 오작동↓) */
+const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_VEL:0.0007, SW_COOL:400, SUPPRESS:1200, COOLDOWN_MS:1200 };
+/* SWIPE_VEL: 스와이프로 인정할 손 속도(화면폭/ms, 낮출수록 민감) · SW_COOL: 스와이프 직후 같은방향 재트리거 방지(ms) · SUPPRESS: 스와이프 후 "반대 방향(복귀)"을 무시할 시간(ms) */
 
 /* ===== 다국어 라벨 ===== */
 const T={
@@ -479,8 +479,8 @@ function classify(lm){const f=fingerExt(lm),up=f.filter(Boolean).length;
   if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";    // ✌ 브이 = 이전 상품
   if(up>=3)return "palm";                            // 🖐 손바닥 = 이미지 좌·우
   return null;}
-let poseHold=null,poseCount=0,startHold=0,palmRef=null,swipeCoolUntil=0;
-function resetPalm(){palmRef=null;swipeCoolUntil=0;}
+let poseHold=null,poseCount=0,startHold=0,palmPrevX=null,palmPrevT=0,lastDir=0,swCoolUntil=0,suppressUntil=0;
+function resetPalm(){palmPrevX=null;palmPrevT=0;}   /* 시간기반(swCool/suppress)은 손 잠깐 놓쳐도 유지 → 복귀 억제 견고 */
 function handle(res){
   const now=performance.now();
   if($("overlay").style.display!=="none"){                 // 가이드 화면: 🖐 손바닥을 펴 들면 시작
@@ -502,20 +502,22 @@ function handle(res){
     if(poseCount>=CONFIG.POSE_FRAMES){
       if(g==="ok")gestureColor(); else gestureProduct(g==="fist"?1:-1);
       cooldownUntil=now+CONFIG.COOLDOWN_MS;poseHold=null;poseCount=0;}
-  } else if(g==="palm"){                          // 🖐 손바닥을 좌우로 밀어 이미지 넘김
+  } else if(g==="palm"){                          // 🖐 손바닥을 빠르게 밀어 이미지 넘김 (속도 감지 + 복귀 방향 억제)
     poseHold=null;poseCount=0;
     const sx=1-lm[9].x;                           // 화면(미러) 기준 손 가로 위치 0~1
-    if(palmRef===null)palmRef=sx;
-    if(now<swipeCoolUntil){                        // 스와이프 직후 잠금: 기준점이 손을 딱 붙어 따라감 → 되돌아오는 동작이 누적 안 됨(무시)
-      $("clbl").textContent="🖐 넘겼어요";
-      palmRef+=(sx-palmRef)*0.6;
-    } else {
-      const move=sx-palmRef;                       // + : 좌→우(왼쪽=이전) / − : 우→좌(오른쪽=다음)
-      if(Math.abs(move)>=CONFIG.SWIPE_DIST){
-        gestureImage(move>0?-1:1);                 // 첫 임계 돌파 방향으로 즉시 이동
-        palmRef=sx; swipeCoolUntil=now+CONFIG.SWIPE_COOL;
-      } else {
-        palmRef+=(sx-palmRef)*CONFIG.REF_FOLLOW;    // 평상시 느린 추종(드리프트 흡수)
+    if(palmPrevX===null){palmPrevX=sx;palmPrevT=now;}
+    else{
+      const dt=Math.max(8,now-palmPrevT);
+      const vel=(sx-palmPrevX)/dt;                 // 화면폭/ms · + : 좌→우 / − : 우→좌
+      palmPrevX=sx;palmPrevT=now;
+      if(now>=swCoolUntil && Math.abs(vel)>=CONFIG.SWIPE_VEL){
+        const dir=vel>0?1:-1;
+        if(now<suppressUntil && dir!==lastDir){    // 방금 스와이프의 반대 방향(=복귀) → 무시
+          $("clbl").textContent="🖐 넘겼어요";
+        } else {
+          gestureImage(dir>0?-1:1);                // 좌→우 = 이전(왼쪽) / 우→좌 = 다음(오른쪽)
+          lastDir=dir; swCoolUntil=now+CONFIG.SW_COOL; suppressUntil=now+CONFIG.SUPPRESS;
+        }
       }
     }
   } else {poseHold=null;poseCount=0;resetPalm();}
@@ -557,3 +559,4 @@ document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElemen
 </script>
 </body>
 </html>
+
