@@ -200,7 +200,7 @@
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
 
 /* ===== 손동작 민감도 설정 ===== */
-const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_DIST:0.09, REF_FOLLOW:0.15, SWIPE_COOL:900, COOLDOWN_MS:1200 };
+const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_DIST:0.07, REF_FOLLOW:0.05, SWIPE_COOL:900, COOLDOWN_MS:1200 };
 /* SWIPE_DIST: 스와이프 인식 이동량(화면폭 비율, 클수록 둔감·오작동↓) · REF_FOLLOW: 평상시 기준점 추종(드리프트 흡수) · SWIPE_COOL: 스와이프 후 잠금시간(ms, 복귀 동작 흡수 — 크게 잡을수록 복귀 오작동↓) */
 
 /* ===== 다국어 라벨 ===== */
@@ -241,7 +241,7 @@ const PRODUCTS=[
    colors:[
      {code:"BDS",name:{kr:"버건디",en:"Burgundy"},chip:"#6B3A44",sizes:[230,240,250],imgs:mk(
        ["1) 웨이브제인/01)BDS/01) 모델컷.jpg","1) 웨이브제인/01)BDS/02) 모델컷.jpg"],
-       ["1) 웨이브제인/01)BDS/03) 제품컷.png","1) 웨이브제인/01)BDS/043) 제품컷.jpg"])},
+       ["1) 웨이브제인/01)BDS/03) 제품컷.png","1) 웨이브제인/01)BDS/04_product.jpg"])},
      {code:"RDS",name:{kr:"레드",en:"Red"},chip:"#C0202B",sizes:[230,240,250],imgs:mk(
        [],
        ["1) 웨이브제인/02)RDS/DXSH7275N-RDS_02_MS.png","1) 웨이브제인/02)RDS/DXSH7275N-RDS_15_S.jpg"])},
@@ -557,4 +557,3 @@ document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElemen
 </script>
 </body>
 </html>
-
