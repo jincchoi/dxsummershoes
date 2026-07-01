@@ -200,7 +200,7 @@
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
 
 /* ===== 손동작 민감도 설정 ===== */
-const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_VEL:0.0007, SW_COOL:400, SUPPRESS:1500, COOLDOWN_MS:1200 };
+const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_VEL:0.0009, SW_COOL:450, SUPPRESS:3000, COOLDOWN_MS:1200 };
 /* SWIPE_VEL: 스와이프로 인정할 손 속도(화면폭/ms, 낮출수록 민감) · SW_COOL: 스와이프 직후 같은방향 재트리거 방지(ms) · SUPPRESS: 스와이프 후 "반대 방향(복귀)"을 무시할 시간(ms, 이 시간 동안 손을 되돌려도 안 넘어감) */
 
 /* ===== 다국어 라벨 ===== */
@@ -479,8 +479,8 @@ function classify(lm){const f=fingerExt(lm),up=f.filter(Boolean).length;
   if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";    // ✌ 브이 = 이전 상품
   if(up>=3)return "palm";                            // 🖐 손바닥 = 이미지 좌·우
   return null;}
-let poseHold=null,poseCount=0,startHold=0,palmPrevX=null,palmPrevT=0,lastDir=0,swCoolUntil=0,suppressUntil=0;
-function resetPalm(){palmPrevX=null;palmPrevT=0;}   /* 시간기반(swCool/suppress)은 손 잠깐 놓쳐도 유지 → 복귀 억제 견고 */
+let poseHold=null,poseCount=0,startHold=0,palmPrevX=null,palmPrevT=0,lastDir=0,swCoolUntil=0,suppressUntil=0,velDir=0,velRun=0;
+function resetPalm(){palmPrevX=null;palmPrevT=0;velRun=0;}   /* 시간기반(swCool/suppress)은 손 잠깐 놓쳐도 유지 → 복귀 억제 견고 */
 function handle(res){
   const now=performance.now();
   if($("overlay").style.display!=="none"){                 // 가이드 화면: 🖐 손바닥을 펴 들면 시작
@@ -491,7 +491,7 @@ function handle(res){
     } else {startHold=0;$("clbl").textContent="🖐 손바닥을 펴서 보여주세요";}
     return;
   }
-  if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;resetPalm();$("clbl").textContent="손을 보여주세요";return;}
+  if(!res||!res.landmarks||!res.landmarks.length){poseHold=null;poseCount=0;resetPalm();lastDir=0;$("clbl").textContent="손을 보여주세요";return;}  // 손 내리면 방향 잠금 해제(반대로 넘기려면 손 내렸다 들기)
   const lm=res.landmarks[0];
   const g=classify(lm);
   $("clbl").textContent = g==="fist"?"✊ 다음 상품":g==="scissors"?"✌ 이전 상품":g==="ok"?"👌 다른 컬러":g==="palm"?"🖐 손바닥 좌우로 밀기":"손을 보여주세요";
@@ -510,15 +510,20 @@ function handle(res){
       const dt=Math.max(8,now-palmPrevT);
       const vel=(sx-palmPrevX)/dt;                 // 화면폭/ms · + : 좌→우 / − : 우→좌
       palmPrevX=sx;palmPrevT=now;
-      if(now>=swCoolUntil && Math.abs(vel)>=CONFIG.SWIPE_VEL){
+      if(now<swCoolUntil){velRun=0;}
+      else if(Math.abs(vel)>=CONFIG.SWIPE_VEL){
         const dir=vel>0?1:-1;
-        if(now<suppressUntil && dir!==lastDir){    // 방금 스와이프의 반대 방향(=복귀) → 무시
-          $("clbl").textContent="🖐 넘겼어요";
-        } else {
-          gestureImage(dir>0?-1:1);                // 좌→우 = 이전(왼쪽) / 우→좌 = 다음(오른쪽)
-          lastDir=dir; swCoolUntil=now+CONFIG.SW_COOL; suppressUntil=now+CONFIG.SUPPRESS;
+        if(dir===velDir)velRun++; else {velDir=dir;velRun=1;}   // 같은 방향 2프레임 연속 확인(순간 튐 무시)
+        if(velRun>=2){
+          if(now<suppressUntil && dir!==lastDir){  // 방금 스와이프의 반대 방향(=복귀) → 무시
+            $("clbl").textContent="🖐 넘겼어요";
+          } else {
+            gestureImage(dir>0?-1:1);              // 좌→우 = 이전(왼쪽) / 우→좌 = 다음(오른쪽)
+            lastDir=dir; swCoolUntil=now+CONFIG.SW_COOL; suppressUntil=now+CONFIG.SUPPRESS;
+          }
+          velRun=0;
         }
-      }
+      } else velRun=0;
     }
   } else {poseHold=null;poseCount=0;resetPalm();}
 }
