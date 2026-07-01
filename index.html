@@ -200,7 +200,7 @@
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
 
 /* ===== 손동작 민감도 설정 ===== */
-const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_VEL:0.0007, SW_COOL:400, SUPPRESS:2800, COOLDOWN_MS:1200 };
+const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_VEL:0.0007, SW_COOL:400, SUPPRESS:1500, COOLDOWN_MS:1200 };
 /* SWIPE_VEL: 스와이프로 인정할 손 속도(화면폭/ms, 낮출수록 민감) · SW_COOL: 스와이프 직후 같은방향 재트리거 방지(ms) · SUPPRESS: 스와이프 후 "반대 방향(복귀)"을 무시할 시간(ms, 이 시간 동안 손을 되돌려도 안 넘어감) */
 
 /* ===== 다국어 라벨 ===== */
