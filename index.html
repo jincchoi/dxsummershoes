@@ -200,8 +200,8 @@
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18";
 
 /* ===== 손동작 민감도 설정 ===== */
-const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_DIST:0.07, REF_FOLLOW:0.12, REARM_BAND:0.02, COOLDOWN_MS:1200 };
-/* SWIPE_DIST: 스와이프 인식 이동량(화면폭 비율, 작을수록 민감) · REF_FOLLOW: 기준점이 손을 따라가는 비율(드리프트 흡수) · REARM_BAND: 손이 시작점 근처로 복귀했다고 볼 범위(작을수록 완전히 돌아와야 재장전) */
+const CONFIG={ POSE_FRAMES:7, START_FRAMES:12, SWIPE_DIST:0.09, REF_FOLLOW:0.15, SWIPE_COOL:900, COOLDOWN_MS:1200 };
+/* SWIPE_DIST: 스와이프 인식 이동량(화면폭 비율, 클수록 둔감·오작동↓) · REF_FOLLOW: 평상시 기준점 추종(드리프트 흡수) · SWIPE_COOL: 스와이프 후 잠금시간(ms, 복귀 동작 흡수 — 크게 잡을수록 복귀 오작동↓) */
 
 /* ===== 다국어 라벨 ===== */
 const T={
@@ -479,8 +479,8 @@ function classify(lm){const f=fingerExt(lm),up=f.filter(Boolean).length;
   if(f[0]&&f[1]&&!f[2]&&!f[3])return "scissors";    // ✌ 브이 = 이전 상품
   if(up>=3)return "palm";                            // 🖐 손바닥 = 이미지 좌·우
   return null;}
-let poseHold=null,poseCount=0,startHold=0,palmRef=null,swLock=false,swOrigin=0,swDir=0;
-function resetPalm(){palmRef=null;swLock=false;}
+let poseHold=null,poseCount=0,startHold=0,palmRef=null,swipeCoolUntil=0;
+function resetPalm(){palmRef=null;swipeCoolUntil=0;}
 function handle(res){
   const now=performance.now();
   if($("overlay").style.display!=="none"){                 // 가이드 화면: 🖐 손바닥을 펴 들면 시작
@@ -502,20 +502,20 @@ function handle(res){
     if(poseCount>=CONFIG.POSE_FRAMES){
       if(g==="ok")gestureColor(); else gestureProduct(g==="fist"?1:-1);
       cooldownUntil=now+CONFIG.COOLDOWN_MS;poseHold=null;poseCount=0;}
-  } else if(g==="palm"){                          // 🖐 손바닥을 좌우로 밀어 이미지 넘김 (첫 방향 판정 + 복귀 완료까지 잠금)
+  } else if(g==="palm"){                          // 🖐 손바닥을 좌우로 밀어 이미지 넘김
     poseHold=null;poseCount=0;
     const sx=1-lm[9].x;                           // 화면(미러) 기준 손 가로 위치 0~1
     if(palmRef===null)palmRef=sx;
-    if(swLock){                                    // 스와이프 후: 손이 시작점으로 돌아올 때까지 잠금 → 복귀 동작은 절대 트리거 안 함
-      $("clbl").textContent="🖐 손을 제자리로";
-      if((sx-swOrigin)*swDir<=CONFIG.REARM_BAND){swLock=false;palmRef=sx;}   // 시작점 근처 복귀 → 재장전
+    if(now<swipeCoolUntil){                        // 스와이프 직후 잠금: 기준점이 손을 딱 붙어 따라감 → 되돌아오는 동작이 누적 안 됨(무시)
+      $("clbl").textContent="🖐 넘겼어요";
+      palmRef+=(sx-palmRef)*0.6;
     } else {
-      const move=sx-palmRef;                       // + : 좌→우(왼쪽 이미지=이전) / − : 우→좌(오른쪽 이미지=다음)
+      const move=sx-palmRef;                       // + : 좌→우(왼쪽=이전) / − : 우→좌(오른쪽=다음)
       if(Math.abs(move)>=CONFIG.SWIPE_DIST){
         gestureImage(move>0?-1:1);                 // 첫 임계 돌파 방향으로 즉시 이동
-        swLock=true;swOrigin=palmRef;swDir=Math.sign(move);
+        palmRef=sx; swipeCoolUntil=now+CONFIG.SWIPE_COOL;
       } else {
-        palmRef+=(sx-palmRef)*CONFIG.REF_FOLLOW;    // 느린 이동·드리프트는 기준점이 흡수
+        palmRef+=(sx-palmRef)*CONFIG.REF_FOLLOW;    // 평상시 느린 추종(드리프트 흡수)
       }
     }
   } else {poseHold=null;poseCount=0;resetPalm();}
@@ -557,3 +557,4 @@ document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElemen
 </script>
 </body>
 </html>
+
